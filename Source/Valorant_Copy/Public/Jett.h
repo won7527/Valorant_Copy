@@ -37,13 +37,21 @@ public:
 	void LookUp(float value);
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-	float walkSpeed = 500;
+	float walkSpeed = 100.0f;
+
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float runSpeed = 800.0f;
 
 	FVector direction;
 
-	void InputHorizontal(float value);
-	
-	void InputVertical(float value);
+	UFUNCTION()
+	void Horizontal(float value);
+	UFUNCTION()
+	void Vertical(float value);
 	
 	void InputJump ();
+
+	void Walking();
+
+	void WalkEnd();
 };

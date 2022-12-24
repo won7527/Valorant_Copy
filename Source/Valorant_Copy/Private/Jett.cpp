@@ -4,21 +4,14 @@
 #include "Jett.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
 
 // Sets default values
 AJett::AJett()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	boxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("Box Collison"));
-	SetRootComponent(boxComp);
-	boxComp->SetBoxExtent(FVector(50.0f));
-
-	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
-	meshComp->SetupAttachment(RootComponent);
-	meshComp->SetRelativeLocation(FVector(0, 0, -50.0f));
-
 }
 
 // Called when the game starts or when spawned
@@ -33,14 +26,6 @@ void AJett::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	direction = FTransform(GetControlRotation()).TransformVector(direction);
-	
-	FVector P0 = GetActorLocation();
-	FVector P = P0 + direction * walkSpeed * DeltaTime;
-	SetActorLocation(P);
-	//AddMovementInput(direction);
-	direction = FVector::ZeroVector;
-	
 
 }
 
@@ -51,9 +36,13 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &AJett::Turn);
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &AJett::LookUp);
-	PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &AJett::InputHorizontal);
-	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &AJett::InputVertical);
+	PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &AJett::Horizontal);
+	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &AJett::Vertical);
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AJett::InputJump);
+	PlayerInputComponent->BindAction(TEXT("Walking"), IE_Pressed, this, &AJett::Walking);
+	PlayerInputComponent->BindAction(TEXT("Walking"), IE_Released, this, &AJett::WalkEnd);
+	
+	
 
 }
 
@@ -67,17 +56,32 @@ void AJett::LookUp(float value)
 	AddControllerPitchInput(value);
 }
 
-void AJett::InputHorizontal(float value)
+void AJett::Horizontal(float value)
 {
-	direction.Y = value;
+	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
+	AddMovementInput(direction, value);
+	
 }
 
-void AJett::InputVertical(float value)
+void AJett::Vertical(float value)
 {
-	direction.X = value;
+	
+	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
+	AddMovementInput(direction, value);
+	
 }
 
 void AJett::InputJump()
 {
 	Jump();
+}
+
+void AJett::Walking()
+{
+	GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
+}
+
+void AJett::WalkEnd()
+{
+	GetCharacterMovement()->MaxWalkSpeed = runSpeed;
 }
