@@ -5,7 +5,8 @@
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
+#include "SmokeGrenade.h"
+#include "Knife.h"
 
 // Sets default values
 AJett::AJett()
@@ -19,6 +20,12 @@ void AJett::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	for (int32 i = 4; i < 5; i++)
+	{
+		const FVector Location = GetActorLocation();
+		const FRotator Rotation = GetActorRotation();
+		GetWorld()->SpawnActor<AActor>(SmokeGrenade, Location, Rotation);
+	}
 }
 
 // Called every frame
@@ -41,6 +48,10 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AJett::InputJump);
 	PlayerInputComponent->BindAction(TEXT("Walking"), IE_Pressed, this, &AJett::Walking);
 	PlayerInputComponent->BindAction(TEXT("Walking"), IE_Released, this, &AJett::WalkEnd);
+	PlayerInputComponent->BindAction(TEXT("JumpDash"), IE_Pressed, this, &AJett::JumpDash);
+	PlayerInputComponent->BindAction(TEXT("Dash"), IE_Pressed, this, &AJett::Dash);
+	PlayerInputComponent->BindAction(TEXT("Smoke"), IE_Pressed, this, &AJett::Smoke);
+	PlayerInputComponent->BindAction(TEXT("KnifeThrow"), IE_Pressed, this, &AJett::KnifeThrow);
 	
 	
 
@@ -84,4 +95,38 @@ void AJett::Walking()
 void AJett::WalkEnd()
 {
 	GetCharacterMovement()->MaxWalkSpeed = runSpeed;
+}
+
+void AJett::JumpDash()
+{
+	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Z);
+	LaunchCharacter(direction * jumpdashDistance, true, true);
+}
+
+void AJett::Dash()
+{
+	
+	LaunchCharacter(direction * dashDistance, true, true);
+}
+
+void AJett::Smoke()
+{
+	const FVector Location = GetActorLocation();
+	const FRotator Rotation = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(SmokeGrenade, Location, Rotation);
+}
+
+void AJett::KnifeThrow()
+{
+	if (MaxKnife == 0)
+	{
+		for (int32 i = 0; i < 5; i++)
+		{
+		
+		}
+	}
+	else
+	{
+		//Knife::KnifeThrowing;
+	}
 }

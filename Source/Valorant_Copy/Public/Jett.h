@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "Jett.generated.h"
 
+
+
+
 UCLASS()
 class VALORANT_COPY_API AJett : public ACharacter
 {
@@ -42,6 +45,21 @@ public:
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float runSpeed = 800.0f;
 
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float dashDistance = 6000.0f;
+
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float jumpdashDistance = 1000.0f;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> SmokeGrenade;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> Knife;
+
+	int32 MaxKnife = 5;
+
+
 	FVector direction;
 
 	UFUNCTION()
@@ -54,4 +72,12 @@ public:
 	void Walking();
 
 	void WalkEnd();
+
+	void JumpDash();
+
+	void Dash();
+
+	void Smoke();
+
+	void KnifeThrow();
 };
