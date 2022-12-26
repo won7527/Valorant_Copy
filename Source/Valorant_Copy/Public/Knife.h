@@ -27,6 +27,7 @@ public:
 	float moveSpeed = 1000.0f;
 
 	void KnifeThrowing();
+	void KnifeDirectionReset();
 
 private:
 

@@ -36,3 +36,8 @@ void AKnife::KnifeThrowing()
 
 	direction = camForward;
 }
+
+void AKnife::KnifeDirectionReset()
+{
+	direction = FVector(0, 0, 0);
+}

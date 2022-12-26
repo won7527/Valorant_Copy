@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "SmokeGrenade.h"
 #include "Knife.h"
+#include "Kismet/GameplayStatics.h"
+#include "EngineUtils.h"
 
 // Sets default values
 AJett::AJett()
@@ -20,18 +22,51 @@ void AJett::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	for (int32 i = 4; i < 5; i++)
+	FVector Location = GetActorLocation() + (100, 0, 0);
+	DeactivatedLocation = Location;
+	FRotator Rotation = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
+	for (TActorIterator<AKnife>it0(GetWorld()); it0; ++it0)
 	{
-		const FVector Location = GetActorLocation();
-		const FRotator Rotation = GetActorRotation();
-		GetWorld()->SpawnActor<AActor>(SmokeGrenade, Location, Rotation);
+		knife0 = *it0;
 	}
+	FVector Location1 = GetActorLocation() + (10, 0, 0);
+	FRotator Rotation1 = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
+	for (TActorIterator<AKnife>it1(GetWorld()); it1; ++it1)
+	{
+		
+		knife1 = *it1;
+	}
+	FVector Location2 = GetActorLocation() + (10, 0, 0);
+	FRotator Rotation2 = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
+	for (TActorIterator<AKnife>it2(GetWorld()); it2; ++it2)
+	{
+		knife2 = *it2;
+	}
+	FVector Location3 = GetActorLocation() + (10, 0, 0);
+	FRotator Rotation3 = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
+	for (TActorIterator<AKnife>it3(GetWorld()); it3; ++it3)
+	{
+		knife3 = *it3;
+	}
+	FVector Location4 = GetActorLocation() + (10, 0, 0);
+	FRotator Rotation4 = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
+	for (TActorIterator<AKnife>it4(GetWorld()); it4; ++it4)
+	{
+		knife4 = *it4;
+	}
+
 }
 
 // Called every frame
 void AJett::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
 	
 
 }
@@ -70,6 +105,7 @@ void AJett::LookUp(float value)
 void AJett::Horizontal(float value)
 {
 	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
+	direction.Normalize();
 	AddMovementInput(direction, value);
 	
 }
@@ -78,6 +114,7 @@ void AJett::Vertical(float value)
 {
 	
 	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
+	direction.Normalize();
 	AddMovementInput(direction, value);
 	
 }
@@ -100,13 +137,17 @@ void AJett::WalkEnd()
 void AJett::JumpDash()
 {
 	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Z);
+	direction.Normalize();
 	LaunchCharacter(direction * jumpdashDistance, true, true);
+	
 }
 
 void AJett::Dash()
 {
-	
+	direction = GetActorForwardVector();
+	direction.Normalize();
 	LaunchCharacter(direction * dashDistance, true, true);
+	
 }
 
 void AJett::Smoke()
@@ -120,13 +161,48 @@ void AJett::KnifeThrow()
 {
 	if (MaxKnife == 0)
 	{
-		for (int32 i = 0; i < 5; i++)
-		{
-		
-		}
+		knife0->KnifeDirectionReset();
+		knife1->KnifeDirectionReset();
+		knife2->KnifeDirectionReset();
+		knife3->KnifeDirectionReset();
+		knife4->KnifeDirectionReset();
+		knife0->SetActorLocation(GetActorLocation() + (100, 100, 100));
+		knife1->SetActorLocation(GetActorLocation());
+		knife2->SetActorLocation(GetActorLocation());
+		knife3->SetActorLocation(GetActorLocation());
+		knife4->SetActorLocation(GetActorLocation());
+		MaxKnife = 5;
 	}
 	else
 	{
-		//Knife::KnifeThrowing;
+		if (MaxKnife == 5)
+		{
+			knife0->SetActorTickEnabled(false);
+			knife0->KnifeThrowing();
+			MaxKnife -= 1;
+
+		}
+		else if (MaxKnife == 4)
+		{
+			knife1->KnifeThrowing();
+			MaxKnife -= 1;
+		}
+		else if (MaxKnife == 3)
+		{
+			knife2->KnifeThrowing();
+			MaxKnife -= 1;
+		}
+		else if (MaxKnife == 2)
+		{
+			knife3->KnifeThrowing();
+			MaxKnife -= 1;
+		}
+		else
+		{
+			knife4->KnifeThrowing();
+			MaxKnife -= 1;
+		}
+
 	}
+
 }
