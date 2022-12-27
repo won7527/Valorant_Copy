@@ -43,7 +43,7 @@ public:
 	float walkSpeed = 100.0f;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-	float runSpeed = 800.0f;
+	float runSpeed = 300.0f;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float dashDistance = 3000.0f;
@@ -66,6 +66,7 @@ public:
 	int32 MaxKnife = 0;
 	FVector DeactivatedLocation;
 	FVector ActivatedLocation = GetActorLocation();
+	FTimerHandle KnifeTime;
 
 
 	FVector direction;
@@ -87,5 +88,9 @@ public:
 
 	void Smoke();
 
-	void KnifeThrow();
+	void KnifeSetting();
+
+	void Fire();
+
+	void FireSp();
 };

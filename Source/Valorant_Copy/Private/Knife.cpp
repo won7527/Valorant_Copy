@@ -30,11 +30,13 @@ void AKnife::Tick(float DeltaTime)
 void AKnife::KnifeThrowing()
 {
 
+	
 	APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
 	//FVector camLocation = camManager->GetCameraLocation();
 	FVector camForward = camManager->GetCameraRotation().Vector();
 
 	direction = camForward;
+
 }
 
 void AKnife::KnifeDirectionReset()

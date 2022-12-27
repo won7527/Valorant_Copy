@@ -66,8 +66,41 @@ void AJett::BeginPlay()
 void AJett::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	
+
+	if (MaxKnife == 5)
+	{
+		//APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+		//FVector camLocation = camManager->GetCameraLocation();
+		knife0->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200);
+		knife1->SetActorLocation(GetActorLocation() + FVector(50, -25, 50));
+		knife2->SetActorLocation(GetActorLocation() + FVector(50, 0, 50));
+		knife3->SetActorLocation(GetActorLocation() + FVector(50, 25, 50));
+		knife4->SetActorLocation(GetActorLocation() + FVector(50, 50, 50));
+		knife0->SetActorRotation(GetActorRotation());
+
+	}															  
+	else if (MaxKnife == 4)
+	{
+		knife1->SetActorLocation(GetActorLocation() + FVector(50, -25, 50));
+		knife2->SetActorLocation(GetActorLocation() + FVector(50, 0, 50));
+		knife3->SetActorLocation(GetActorLocation() + FVector(50, 25, 50));
+		knife4->SetActorLocation(GetActorLocation() + FVector(50, 50, 50));
+	}
+	else if (MaxKnife == 3)
+	{
+		knife2->SetActorLocation(GetActorLocation() + FVector(50, 0, 50));
+		knife3->SetActorLocation(GetActorLocation() + FVector(50, 25, 50));
+		knife4->SetActorLocation(GetActorLocation() + FVector(50, 50, 50));
+	}
+	else if (MaxKnife == 2)
+	{
+		knife3->SetActorLocation(GetActorLocation() + FVector(50, 25, 50));
+		knife4->SetActorLocation(GetActorLocation() + FVector(50, 50, 50));
+	}
+	else if (MaxKnife == 1)
+	{
+		knife4->SetActorLocation(GetActorLocation() + FVector(50, 50, 50));
+	}
 
 }
 
@@ -86,7 +119,9 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("JumpDash"), IE_Pressed, this, &AJett::JumpDash);
 	PlayerInputComponent->BindAction(TEXT("Dash"), IE_Pressed, this, &AJett::Dash);
 	PlayerInputComponent->BindAction(TEXT("Smoke"), IE_Pressed, this, &AJett::Smoke);
-	PlayerInputComponent->BindAction(TEXT("KnifeThrow"), IE_Pressed, this, &AJett::KnifeThrow);
+	PlayerInputComponent->BindAction(TEXT("KnifeSet"), IE_Pressed, this, &AJett::KnifeSetting);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AJett::Fire);
+	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Pressed, this, &AJett::FireSp);
 	
 	
 
@@ -157,7 +192,7 @@ void AJett::Smoke()
 	GetWorld()->SpawnActor<AActor>(SmokeGrenade, Location, Rotation);
 }
 
-void AJett::KnifeThrow()
+void AJett::KnifeSetting()
 {
 	if (MaxKnife == 0)
 	{
@@ -166,43 +201,80 @@ void AJett::KnifeThrow()
 		knife2->KnifeDirectionReset();
 		knife3->KnifeDirectionReset();
 		knife4->KnifeDirectionReset();
-		knife0->SetActorLocation(GetActorLocation() + (100, 100, 100));
-		knife1->SetActorLocation(GetActorLocation());
-		knife2->SetActorLocation(GetActorLocation());
-		knife3->SetActorLocation(GetActorLocation());
-		knife4->SetActorLocation(GetActorLocation());
 		MaxKnife = 5;
 	}
-	else
+
+}
+
+void AJett::Fire()
+{
+	if (MaxKnife == 5)
 	{
-		if (MaxKnife == 5)
-		{
-			knife0->SetActorTickEnabled(false);
-			knife0->KnifeThrowing();
-			MaxKnife -= 1;
+		knife0->KnifeThrowing();
+		MaxKnife -= 1;
 
-		}
-		else if (MaxKnife == 4)
-		{
-			knife1->KnifeThrowing();
-			MaxKnife -= 1;
-		}
-		else if (MaxKnife == 3)
-		{
-			knife2->KnifeThrowing();
-			MaxKnife -= 1;
-		}
-		else if (MaxKnife == 2)
-		{
-			knife3->KnifeThrowing();
-			MaxKnife -= 1;
-		}
-		else
-		{
-			knife4->KnifeThrowing();
-			MaxKnife -= 1;
-		}
+	}
+	else if (MaxKnife == 4)
+	{
+		knife1->KnifeThrowing();
+		MaxKnife -= 1;
+	}
+	else if (MaxKnife == 3)
+	{
+		knife2->KnifeThrowing();
+		MaxKnife -= 1;
+	}
+	else if (MaxKnife == 2)
+	{
+		knife3->KnifeThrowing();
+		MaxKnife -= 1;
+	}
+	else if (MaxKnife == 1)
+	{
+		knife4->KnifeThrowing();
+		MaxKnife -= 1;
+	}
 
+}
+
+void AJett::FireSp()
+{
+	if (MaxKnife == 5)
+	{
+		knife0->KnifeThrowing();
+		//GetWorld()->GetTimerManager().SetTimer(KnifeTime, knife1, &Knife::KnifeThrowing, 0.2f, false);
+		knife1->KnifeThrowing();
+		knife2->KnifeThrowing();
+		knife3->KnifeThrowing();
+		knife4->KnifeThrowing();
+		MaxKnife = 0;
+
+	}
+	else if (MaxKnife == 4)
+	{
+		knife1->KnifeThrowing();
+		knife2->KnifeThrowing();
+		knife3->KnifeThrowing();
+		knife4->KnifeThrowing();
+		MaxKnife = 0;
+	}
+	else if (MaxKnife == 3)
+	{
+		knife2->KnifeThrowing();
+		knife3->KnifeThrowing();
+		knife4->KnifeThrowing();
+		MaxKnife = 0;
+	}
+	else if (MaxKnife == 2)
+	{
+		knife3->KnifeThrowing();
+		knife4->KnifeThrowing();
+		MaxKnife = 0;
+	}
+	else if (MaxKnife == 1)
+	{
+		knife4->KnifeThrowing();
+		MaxKnife = 0;
 	}
 
 }
