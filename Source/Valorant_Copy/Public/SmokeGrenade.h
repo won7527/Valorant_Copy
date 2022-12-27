@@ -19,17 +19,24 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	FVector DefaultDir = FVector(0, 0, -100);
+	void KeepPressed();
+	void ReleasedC();
 	
+	UPROPERTY(EditAnywhere)
+	class UCapsuleComponent* capCom;
+	
+	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = BulletSettings)
 	float moveSpeed = 1000.0f;
-
-	
-private:
+	bool keepPressed;
 
 	FVector direction;
+
+private:
 };
