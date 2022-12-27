@@ -2,6 +2,7 @@
 
 
 #include "Gun.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AGun::AGun()
@@ -42,14 +43,18 @@ void AGun::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AGun::StartFire()
 {
+	FireShot();
+	GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AGun::FireShot, TimeBetweenShots, true);
 }
 
 void AGun::StopFire()
 {
+	GetWorldTimerManager().ClearTimer(TimerHandle_HandleRefire);
 }
 
 void AGun::FireShot()
 {
+	UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 }
 
 void AGun::Vertical(float AxisValue) {

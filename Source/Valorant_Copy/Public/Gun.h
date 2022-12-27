@@ -15,9 +15,21 @@ public:
 	// Sets default values for this character's properties
 	AGun();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay);
+	class USoundBase* FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	class UAnimMontage* FireAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	float TimeBetweenShots;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	FTimerHandle TimerHandle_HandleRefire;
 
 public:	
 	// Called every frame
