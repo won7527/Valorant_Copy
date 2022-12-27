@@ -3,12 +3,35 @@
 
 #include "Gun.h"
 #include "Kismet/GameplayStatics.h"
+#include "Animation/AnimInstance.h"
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Enemy.h"
+#include "Engine/EngineTypes.h"
+
+//#include "Components/SceneComponent.h"
 
 // Sets default values
 AGun::AGun()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
+	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
+	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
+	Mesh1P->SetOnlyOwnerSee(true);
+	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
+	Mesh1P->bCastDynamicShadow = false;
+	Mesh1P->CastShadow = false;
+
+	FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_GUN"));
+	FP_Gun->SetOnlyOwnerSee(true);
+	FP_Gun->bCastDynamicShadow = false;
+	FP_Gun->CastShadow = false;
+	FP_Gun->SetupAttachment(RootComponent);
 
 }
 
@@ -34,8 +57,12 @@ void AGun::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &AGun::Vertical);
 	PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &AGun::Horizontal);
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AGun::StartFire);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AGun::StopFire);
+
+	
+
 
 
 
@@ -54,7 +81,45 @@ void AGun::StopFire()
 
 void AGun::FireShot()
 {
-	UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	FHitResult Hit;
+
+	const float WeaponRange = 20000.0f;
+	const FVector StartTrace = FirstPersonCameraComponent->GetComponentLocation();
+	const FVector EndTrace = (FirstPersonCameraComponent->GetForwardVector() * WeaponRange) + StartTrace;
+
+	FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);  
+	
+	if (GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_Visibility, QueryParams)) {
+
+		if (ImpactParticles) {
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+			//Hit.ImpactNormal.Vector();
+			//데미지 이벤트
+			//FPointDamageEvent DamageEvent(Damage, Hit, FirstPersonCameraComponent->GetForwardVector());
+			//AActor* HitActor = Hit.GetActor();
+			//if (HitActor != nullptr) {
+			//	HitActor->TakeDamage(Damage, DamageEvent);
+			//}
+		}
+
+	}
+
+	if (MuzzleParticles) {
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleParticles, FP_Gun->GetSocketTransform(FName("Muzzle")));
+	}
+
+	if (FireSound != nullptr) {
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	}
+
+	if (FireAnimation != nullptr) {
+
+		UAnimInstance* Animinstance = Mesh1P->GetAnimInstance();
+		if (Animinstance != nullptr) {
+			Animinstance->Montage_Play(FireAnimation, 1.f);
+		}
+	}
+
 }
 
 void AGun::Vertical(float AxisValue) {

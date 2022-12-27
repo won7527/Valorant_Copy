@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Gun.generated.h"
 
+
 UCLASS()
 class VALORANT_COPY_API AGun : public ACharacter
 {
@@ -22,7 +23,24 @@ public:
 	class UAnimMontage* FireAnimation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	class UCameraComponent* FirstPersonCameraComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	class USkeletalMeshComponent* Mesh1P;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	class USkeletalMeshComponent* FP_Gun;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	float TimeBetweenShots;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	class UParticleSystem* MuzzleParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	class UParticleSystem* ImpactParticles;
+
+	
 
 
 protected:
@@ -44,6 +62,11 @@ public:
 
 private:
 
+	//데미지 선언
+	//UPROPERTY(EditAnywhere);
+	//float Damage = 10;
+
 	void Vertical(float AxisValue);
 	void Horizontal(float AxisValue);
+
 };
