@@ -4,6 +4,7 @@
 #include "YBullet.h"
 #include <Components/SphereComponent.h>
 #include <GameFrameWork/ProjectileMovementComponent.h>
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AYBullet::AYBullet()
@@ -64,6 +65,7 @@ void AYBullet::DestroyMySelf()
 void AYBullet::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	
 	//상대와 총알이 충돌했을때
+
 
 }
 
