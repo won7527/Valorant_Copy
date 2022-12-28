@@ -60,11 +60,16 @@ public:
 	void StopFire();
 	void FireShot();
 
+
 private:
 
 	//데미지 선언
-	//UPROPERTY(EditAnywhere);
-	//float Damage = 10;
+	UPROPERTY(EditAnywhere);
+	float Damage = 10;
+
+	FVector ShotDirection;
+	//반동값
+	FVector rebound=FVector(0,0,0);
 
 	void Vertical(float AxisValue);
 	void Horizontal(float AxisValue);

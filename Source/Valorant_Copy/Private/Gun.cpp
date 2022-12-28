@@ -7,7 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Enemy.h"
-#include "Engine/EngineTypes.h"
+#include "Engine/DamageEvents.h"
 
 //#include "Components/SceneComponent.h"
 
@@ -70,22 +70,25 @@ void AGun::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AGun::StartFire()
 {
-	FireShot();
+	//rebound = FVector(0,0,0);
+	//rebound = FireShot(rebound);
 	GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AGun::FireShot, TimeBetweenShots, true);
 }
 
 void AGun::StopFire()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle_HandleRefire);
+	rebound = FVector(0,0,0);
 }
 
 void AGun::FireShot()
 {
 	FHitResult Hit;
 
+	rebound += FVector(0,0,0.03f);
 	const float WeaponRange = 20000.0f;
 	const FVector StartTrace = FirstPersonCameraComponent->GetComponentLocation();
-	const FVector EndTrace = (FirstPersonCameraComponent->GetForwardVector() * WeaponRange) + StartTrace;
+	const FVector EndTrace = ((FirstPersonCameraComponent->GetForwardVector()+rebound)* WeaponRange) + StartTrace;
 
 	FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);  
 	
@@ -93,13 +96,19 @@ void AGun::FireShot()
 
 		if (ImpactParticles) {
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
-			//Hit.ImpactNormal.Vector();
 			//데미지 이벤트
-			//FPointDamageEvent DamageEvent(Damage, Hit, FirstPersonCameraComponent->GetForwardVector());
+			ShotDirection = FirstPersonCameraComponent->GetForwardVector();
+			ShotDirection.Normalize();
+
+			//FDamageEvent dam;
+			//FPointDamageEvent fdm;
+
+			FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
+
 			//AActor* HitActor = Hit.GetActor();
 			//if (HitActor != nullptr) {
 			//	HitActor->TakeDamage(Damage, DamageEvent);
-			//}
+			// }
 		}
 
 	}
@@ -119,6 +128,8 @@ void AGun::FireShot()
 			Animinstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
+	//reboundForce += FVector(0,0,0.1f);
+	//return reboundForce;
 
 }
 
