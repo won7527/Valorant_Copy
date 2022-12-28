@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Camera/CameraComponent.h"
+#include"Components/CapsuleComponent.h"
+#include "YReynaile.h"
 #include "YReyna.generated.h"
 
 UCLASS()
@@ -18,6 +21,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	//YReynaile 연결하기 위한(?)
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<class AYReynaile> ProjectileClass;
 
 private:
 
@@ -38,16 +45,19 @@ public:
 		class USpringArmComponent* springArmComp;
 
 	//UCamera Component 추가
-	UPROPERTY(VisibleAnywhere, Category = Camera)
+	UPROPERTY(EditAnywhere, Category = Camera)
 		class UCameraComponent* yReynaCamComp;
 
+	//1인칭 카메라 추가
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	USkeletalMeshComponent* FPSMesh;
 
 	//이동속도
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 		float walkSpeed = 600.0f;
 
-	//이동방향
-	FVector direction;
+	//캐릭터 이동방향
+	FVector Reynadirection;
 
 	//좌우이동 입력 이벤트 처리 함수
 	void InputHorizontal(float value);
@@ -60,22 +70,27 @@ public:
 
 	//총 skeletalMesh
 	UPROPERTY(VisibleAnywhere, Category = GunMesh)
-		class USkeletalMeshComponent* gunMeshComp;
+	class USkeletalMeshComponent* gunMeshComp;
 
 	//총알 장전
-	void InPutBulletLoad();
+	void BulletLoad();
 
 	//Crouch
 	void InputCrouch();
 
 	//Fire
-	void InputFire();
+	UFUNCTION()
+	void Fire();
+
+	//카메라 위치로부터 총구의 위치를 잡는다(?)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	FVector MuzzleOffset;
 
 	//SilentStep
-	void InputSilentStep();
+	void SilentStep();
 
 	//TelescopeSight 조준경
-	void InputTelescopeSight();
+	void TelescopeSight();
 
 	//조준경 활성화 여부
 	bool bTelescopeAim = false;
@@ -88,7 +103,7 @@ public:
 	class UUserWidget* _scopeUI;
 
 	//무기고 오픈
-	void InputWeaponStorageOpen();
+	void WeaponStorageOpen();
 
 
 };

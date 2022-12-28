@@ -15,29 +15,39 @@ AYReyna::AYReyna()
 	ConstructorHelpers::FObjectFinder<USkeletalMesh>
 		TempMesh(TEXT("SkeletalMesh'/Game/Characters/Mannequin_UE4/Meshes/SK_Mannequin.SK_Mannequin'"));
 
+	
+		//1인칭 시점으로 보이는 카메라 컴포넌트 생성
+		yReynaCamComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+		check(yReynaCamComp != nullptr);
+
+		//캡슐컴포넌트에 카메라 컴포넌트 붙이기
+		yReynaCamComp->SetupAttachment(CastChecked<USceneComponent, UCapsuleComponent>(GetCapsuleComponent()));
+
+		//카메라 위치 눈높이쯤 맞추기
+		yReynaCamComp->SetRelativeLocation(FVector(0.0f, 0.0f, 40.0f));
+
+		//카메라 회전을 pawn이 컨트롤 할 수 있도록
+		yReynaCamComp->bUsePawnControlRotation = true;
+
+		//1인칭 매시컴포넌트(플레이 당사자용) 생성
+		FPSMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
+		check(FPSMesh != nullptr);
+
+		//플레이하는 당사자만 1인칭시점의 손을 볼 수 있도록
+		FPSMesh->SetOnlyOwnerSee(true);
+
+		//FpsMesh와 Fps camera 연결하기
+		FPSMesh->SetupAttachment(yReynaCamComp);
+
+		//1인칭 mesh가 그림자 지지 않도록
+		FPSMesh->bCastDynamicShadow = false;
+		FPSMesh->CastShadow = false;
+
+		//플레이 당사자가 3인칭 캐릭터매시는 안보이도록
+		GetMesh()->SetOnlyOwnerSee(true);
+
 	if (TempMesh.Succeeded())
 	{
-		GetMesh()->SetSkeletalMesh(TempMesh.Object);
-
-		//2.Mesh 컴포넌트의 위치와 회전값을 설정
-		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90), FRotator(0, -90, 0));
-
-		//3. 카메라를 붙일것이다
-		//3-1. SpringArm컴포넌트 붙이기
-		springArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
-		springArmComp->SetupAttachment(RootComponent);
-		springArmComp->SetRelativeLocation(FVector(0, 70, 90));
-		springArmComp->TargetArmLength = 400;
-		//카메라 회전과 관련한 설정(마우스 돌릴때 화면이 회전하는 것)
-		springArmComp->bUsePawnControlRotation = true;
-
-		//3-2. Camera Component 붙이기
-		yReynaCamComp = CreateDefaultSubobject<UCameraComponent>(TEXT("yReynaCamComp"));
-		yReynaCamComp->SetupAttachment(springArmComp);
-
-		//카메라 회전과 관련한 설정(마우스 돌릴때 화면이 회전하는 것)
-		yReynaCamComp->bUsePawnControlRotation = false;
-		bUseControllerRotationYaw = true;
 
 		//4. 총 skeletalMesh 컴포넌트 등록
 		gunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMeshComp"));
@@ -46,16 +56,16 @@ AYReyna::AYReyna()
 		gunMeshComp->SetupAttachment(GetMesh());
 
 		//4-2. 스켈레탈메시 데이터 로드
-		ConstructorHelpers::FObjectFinder<USkeletalMesh> TempGunMesh(TEXT(""));
+		ConstructorHelpers::FObjectFinder<USkeletalMesh> TempGunMesh(TEXT("SkeletalMesh'/Game/FPWeapon/Mesh/SK_FPGun.SK_FPGun'"));
 
 		//4-3. 데이터 로드가 성공했다면
 		if (TempGunMesh.Succeeded())
 		{
-			//4-4. 스켈레탈메시 데이터 할당
-			gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
+		//4-4. 스켈레탈메시 데이터 할당
+		gunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
 
-			//4-5. 위치 조정하기
-			gunMeshComp->SetRelativeLocationAndRotation((FVector(-60, 3.6f, 96)), FRotator(0, 0, 90.f));
+		//4-5. 위치 조정하기
+		gunMeshComp->SetRelativeLocationAndRotation((FVector(-59.3f, 3.34f, 94.86f)), FRotator(0, 0, 90.f));
 		}
 	}
 
@@ -72,10 +82,10 @@ void AYReyna::BeginPlay()
 void AYReyna::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	//플레이어 이동처리
-	direction.Normalize();
-	FVector dir = GetActorLocation() + direction * walkSpeed * DeltaTime;
+	Reynadirection.Normalize();
+	FVector dir = GetActorLocation() + Reynadirection * walkSpeed * DeltaTime;
 	SetActorLocation(dir);
 
 }
@@ -97,14 +107,14 @@ void AYReyna::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AYReyna::InputJump);
 
 	//Reload 바인딩
-	PlayerInputComponent->BindAction(TEXT("BulletLoad"), IE_Pressed, this, &AYReyna::InPutBulletLoad);
+	PlayerInputComponent->BindAction(TEXT("BulletLoad"), IE_Pressed, this, &AYReyna::BulletLoad);
 
 	//Crouch 바인딩
 	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AYReyna::InputCrouch);
 	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Released, this, &AYReyna::InputCrouch);
 
 	//Fire 바인딩
-	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AYReyna::InputFire);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AYReyna::Fire);
 
 }
 
@@ -122,14 +132,14 @@ void AYReyna::Lookup(float AxisValue)
 //캐릭터 양옆 움직임
 void AYReyna::InputHorizontal(float value)
 {
-	direction.Y = value;
+	Reynadirection.Y = value;
 
 }
 
 //캐릭터 상하 움직임
 void AYReyna::InputVertical(float value)
 {
-	direction.X = value;
+	Reynadirection.X = value;
 }
 
 void AYReyna::InputJump()
@@ -137,7 +147,7 @@ void AYReyna::InputJump()
 	Jump();
 }
 
-void AYReyna::InPutBulletLoad()
+void AYReyna::BulletLoad()
 {
 
 }
@@ -147,17 +157,60 @@ void AYReyna::InputCrouch()
 
 }
 
-void AYReyna::InputFire()
+void AYReyna::Fire() 
+{
+    //만들어준 YReynaile의 ProjectileClass에 접근할것이다.
+	if (ProjectileClass) 
+	{
+		//카메라 위치 잡기
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		GetActorEyesViewPoint(CameraLocation, CameraRotation); //눈높이설정(?)
+
+		//카메라 앞에서의 총구(Muzzle) 위치를 대략적으로 설정한다
+		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
+		//카메라 앞에 세워둘 총구의 위치를 world로(world location 같은 느낌인듯)
+		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation). TransformVector(MuzzleOffset);
+
+		//Skew the aim to be slightly upwards(위쪽으로 살짝 비스듬히 조절하라?) Skew : 비스듬히 움직이다
+		FRotator MuzzleRotation = CameraRotation;
+		MuzzleRotation.Pitch += 10.0f;
+
+		//UWorld* World = GetWorld(); 
+		//얜 왜쓰는지 모르겠지만 일단 주석으로 박고 함수 자체를 사용하여 접근할것이다 
+		//GetWorld()-> 이렇게 사용해주면 된다.
+
+		if (GetWorld()) 
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = GetInstigator(); 
+			
+			//instigator을 가해자로 생각할 것.
+			//내가 몬스터를 화살로 공격한다 >> instigator가 나(캐릭터가 발생시킨 가해자)
+
+			AYReynaile* Projectile = GetWorld()->SpawnActor<AYReynaile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+
+			//if (Projectile) {
+
+				//projectile(충돌체(?))의 궤적 설정하기 (Set the projectile's initial trajectory)
+				FVector LaunchDirection = MuzzleRotation.Vector();
+
+				//레이나의 방향으로 총을 발사하는 궤적을 지정할것이다
+				//(AYReyna::Projectile)->(AYReynaile::iledirection(LaunchDirection));
+			//}
+			
+		}
+	}
+}
+
+void AYReyna::SilentStep()
 {
 
 }
 
-void AYReyna::InputSilentStep()
-{
-
-}
-
-void AYReyna::InputTelescopeSight() {
+void AYReyna::TelescopeSight() {
 
 	// 	if (bTelescopeAim) {
 	// 		return;
@@ -190,7 +243,7 @@ void AYReyna::InputTelescopeSight() {
 
 }
 
-void AYReyna::InputWeaponStorageOpen()
+void AYReyna::WeaponStorageOpen()
 {
 
 }

@@ -34,4 +34,17 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	class UStaticMeshComponent* bodyMeshComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = BulletSettings)
+	float moveSpeed = 4500.f;
+
+	UFUNCTION()
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+private:
+	FVector direction;	
+	FTimerHandle lifeTimer;
+
+	void DestroyMySelf();
+
 };
