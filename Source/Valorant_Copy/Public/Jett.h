@@ -50,7 +50,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float jumpdashDistance = 2000.0f;
-	
+
+	float xValue;
+	float yValue;
+
 	bool keepPressed;
 
 	UPROPERTY(EditAnywhere)
@@ -78,7 +81,7 @@ public:
 	FVector DeactivatedLocation;
 	FVector ActivatedLocation = GetActorLocation();
 
-
+	FVector DashDir;
 
 	FVector direction;
 	

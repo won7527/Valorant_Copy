@@ -69,7 +69,7 @@ void AJett::BeginPlay()
 	knifeArray.Add(knife2);
 	knifeArray.Add(knife3);
 	knifeArray.Add(knife4);
-	
+
 }
 
 // Called every frame
@@ -77,7 +77,7 @@ void AJett::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	
+	DashDir = GetActorForwardVector();
 
 	if (MaxKnife == 5)
 	{
@@ -136,9 +136,6 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AJett::Fire);
 	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Pressed, this, &AJett::FireSp);
 	
-	
-	
-
 }
 
 void AJett::Turn(float value)
@@ -156,7 +153,10 @@ void AJett::Horizontal(float value)
 	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
 	direction.Normalize();
 	AddMovementInput(direction, value);
-	
+	//CharacterMoveDir = direction * value;
+	//CharacterMoveDir.Z = 0;
+	//CharacterMoveDir.Normalize();
+	yValue = value;
 }
 
 void AJett::Vertical(float value)
@@ -165,7 +165,10 @@ void AJett::Vertical(float value)
 	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 	direction.Normalize();
 	AddMovementInput(direction, value);
-	
+	//CharacterMoveDir = direction * value;
+	//CharacterMoveDir.Z = 0;
+	//CharacterMoveDir.Normalize();
+	xValue = value;
 }
 
 void AJett::InputJump()
@@ -193,15 +196,27 @@ void AJett::JumpDash()
 
 void AJett::Dash()
 {
-	direction = GetActorRotation().Vector();
-	direction.Normalize();
-	LaunchCharacter(direction * dashDistance, true, true);
-	
+	if (xValue == 0 && yValue == 0)
+	{
+		LaunchCharacter(GetActorForwardVector() * dashDistance, true, true);
+	}
+	else
+	{
+		DashDir.X = xValue;
+		DashDir.Y = yValue;
+		LaunchCharacter(GetActorRotation().RotateVector(DashDir) * dashDistance, true, true);
+	}
 }
+
 
 void AJett::Smoke()
 {
 	smoke->SetActorLocation(GetActorLocation());
+	smoke->KeepPressed();
+	APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+	FVector camForward = camManager->GetCameraRotation().Vector();
+	direction = camForward;
+	smoke->FireInDirection(direction);
 	smoke->KeepPressed();
 }
 
