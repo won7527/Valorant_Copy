@@ -85,6 +85,11 @@ void AGun::FireShot()
 {
 	FHitResult Hit;
 
+	//카메라를 위로 올리는 반동
+	//CamPitch = FirstPersonCameraComponent->GetRelativeRotation() + FRotator(10.0f, 0, 0);
+	//FirstPersonCameraComponent->SetRelativeRotation(CamPitch);
+
+	//총이 나가는 위치를 올리는 반동
 	rebound += FVector(0,0,0.03f);
 	const float WeaponRange = 20000.0f;
 	const FVector StartTrace = FirstPersonCameraComponent->GetComponentLocation();

@@ -70,6 +70,8 @@ private:
 	FVector ShotDirection;
 	//반동값
 	FVector rebound=FVector(0,0,0);
+	//카메라 피치 값
+	//FRotator CamPitch;
 
 	void Vertical(float AxisValue);
 	void Horizontal(float AxisValue);
