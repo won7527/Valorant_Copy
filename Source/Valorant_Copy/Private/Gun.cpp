@@ -8,6 +8,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Enemy.h"
 #include "Engine/DamageEvents.h"
+#include "Math/UnrealMathUtility.h"
 
 //#include "Components/SceneComponent.h"
 
@@ -46,6 +47,36 @@ void AGun::BeginPlay()
 void AGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (isFire) {
+
+		currentTime += DeltaTime;
+		if (currentTime > TimeBetweenShots) {
+			if (recoilCount <= 7) {
+				APawn::AddControllerPitchInput(-0.5f);
+				recoilCount += 1;
+				
+			}
+			else if (recoilCount <= 16) {
+				APawn::AddControllerYawInput(-1);
+				if (recoilCount % 2 == 0) {
+					APawn::AddControllerPitchInput(-0.6f);
+				}
+				else if (recoilCount % 2 == 1) {
+					APawn::AddControllerPitchInput(0.3f);
+				}
+				
+				recoilCount += 1;
+			}
+			else if (recoilCount <= 25) {
+				APawn::AddControllerYawInput(1);
+
+				recoilCount += 1;
+			}
+			currentTime = 0;
+		}
+
+	}
 
 }
 
@@ -72,6 +103,7 @@ void AGun::StartFire()
 {
 	//rebound = FVector(0,0,0);
 	//rebound = FireShot(rebound);
+	isFire = true;
 	GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AGun::FireShot, TimeBetweenShots, true);
 }
 
@@ -79,18 +111,39 @@ void AGun::StopFire()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle_HandleRefire);
 	rebound = FVector(0,0,0);
+	recoilCount = 0;
+	reboundCount = 0;
+	isFire = false;
 }
 
 void AGun::FireShot()
 {
 	FHitResult Hit;
 
+	
+
 	//카메라를 위로 올리는 반동
 	//CamPitch = FirstPersonCameraComponent->GetRelativeRotation() + FRotator(10.0f, 0, 0);
 	//FirstPersonCameraComponent->SetRelativeRotation(CamPitch);
 
 	//총이 나가는 위치를 올리는 반동
-	rebound += FVector(0,0,0.03f);
+
+	/*if (reboundCount <= 7) {
+		reZ += FMath::RandRange(0.01f, 0.03f);
+		rebound += FVector(0, 0, reZ);
+		reboundCount++;
+	}*/
+
+	if (reboundCount <= 7) {
+		rebound.Z += 0.03f;
+	}
+	else if (reboundCount > 7) {
+		reX += FMath::RandRange(0.01f, 0.03f);
+		reY += FMath::RandRange(0.01f, 0.03f);
+		reZ += FMath::RandRange(0.01f, 0.03f);
+		rebound=FVector(reX, reY, reZ);
+	}
+	
 	const float WeaponRange = 20000.0f;
 	const FVector StartTrace = FirstPersonCameraComponent->GetComponentLocation();
 	const FVector EndTrace = ((FirstPersonCameraComponent->GetForwardVector()+rebound)* WeaponRange) + StartTrace;

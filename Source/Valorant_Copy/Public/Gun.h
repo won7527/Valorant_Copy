@@ -73,7 +73,22 @@ private:
 	//카메라 피치 값
 	//FRotator CamPitch;
 
+	//카메라 반동 횟수
+	int32 recoilCount=0;
+	//총 반동 횟수
+	int32 reboundCount = 0;
+
 	void Vertical(float AxisValue);
 	void Horizontal(float AxisValue);
+
+	//현재시간
+	float currentTime;
+
+	//발사여부
+	bool isFire = false;
+
+	float reZ;
+	float reX;
+	float reY;
 
 };
