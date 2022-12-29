@@ -82,6 +82,15 @@ public:
 	UFUNCTION()
 	void Fire();
 
+	//총알 파편 효과
+	UPROPERTY(EditAnywhere, Category = BluePrintEffect)
+	class UParticleSystem* bulletEffectFactory;
+
+	//눈총 스킬 EyeshotSkill
+	void EyeShotSkill();
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
+
 	//카메라 위치로부터 총구의 위치를 잡는다(?)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector MuzzleOffset;

@@ -3,6 +3,8 @@
 
 #include "YReyna.h"
 #include <GameFramework/SpringArmComponent.h> //SpringArm Component 등록
+#include "GameFramework/Actor.h"
+#include <Kismet/GameplayStatics.h>
 #include <Camera/CameraComponent.h> //UCamera Component 등록
 
 // Sets default values
@@ -116,6 +118,9 @@ void AYReyna::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	//Fire 바인딩
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AYReyna::Fire);
 
+	//EyeShot Skill 눈총스킬 키보드 C 연결
+	PlayerInputComponent->BindAction(TEXT("EyeShotSkill"), IE_Pressed, this, &AYReyna::EyeShotSkill);
+
 }
 
 //시야 회전처리
@@ -203,6 +208,54 @@ void AYReyna::Fire()
 			
 		}
 	}
+}
+
+void AYReyna::EyeShotSkill() {
+	
+	//눈총 스킬	
+	FHitResult Hit;
+
+	// 라인트레이스는 캐릭터로부터 1000 떨어진 위치까지 따라간다 
+	//  >> 10 부터 1000까지의 범위로 지정할 수 있도록 바꿔야한다
+	FVector TraceStart = yReynaCamComp->GetComponentLocation();
+	FVector TraceEnd = yReynaCamComp->GetComponentLocation() + GetActorForwardVector() * 1000.0f;
+	                                                               // 1000을 화면에 클릭하는 위치를
+																   //가리키는 함수로 만들어줘야하지 않을까
+
+	// FCollisionQueryParams
+	// 라인트레이스가 액터를 막지 않도록
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+		                            //충돌정보, 시작위치, 종료위치,     검출 채널,         충돌옵션
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, TraceChannelProperty, QueryParams);
+
+	//충돌하면 
+
+	// 디버깅 잘 되는지 확인하기
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
+	UE_LOG(LogTemp, Log, TEXT("Tracing line: %s to %s"), *TraceStart.ToCompactString(), *TraceEnd.ToCompactString());
+
+	// 라인트레이스가 충돌하면  bBlockingHit은 true,
+	// 무엇을 치는지 보여줄 것이다.
+	if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
+	{	
+		UE_LOG(LogTemp, Log, TEXT("Trace hit actor: %s"), *Hit.GetActor()->GetName());
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
+	}
+
+	
+
+	//파편효과 트렌스폼
+	FTransform bulletTrans;
+	
+	//부딪힌 위치 할당
+	bulletTrans.SetLocation(Hit.ImpactPoint);
+	
+	//총알 파편효과 인스턴스 생성
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletEffectFactory, bulletTrans);
+
 }
 
 void AYReyna::SilentStep()
