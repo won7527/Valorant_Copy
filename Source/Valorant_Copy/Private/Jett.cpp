@@ -213,11 +213,7 @@ void AJett::Smoke()
 {
 	smoke->SetActorLocation(GetActorLocation());
 	smoke->KeepPressed();
-	APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
-	FVector camForward = camManager->GetCameraRotation().Vector();
-	direction = camForward;
-	smoke->FireInDirection(direction);
-	smoke->KeepPressed();
+
 }
 
 void AJett::SmokeControlEnd()

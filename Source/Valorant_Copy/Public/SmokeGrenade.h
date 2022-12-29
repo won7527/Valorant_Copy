@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Components/SphereComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "SmokeGrenade.generated.h"
 
 UCLASS()
@@ -25,21 +23,18 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-	USphereComponent* CollisionComponent;
 
-	UPROPERTY(VisibleAnywhere, Category = Movement)
-	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	void KeepPressed();
 	void ReleasedC();
-	void FireInDirection(const FVector& ShootDirection);
 	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = BulletSettings)
 	float moveSpeed = 1000.0f;
 	bool keepPressed;
+	float angle;
+	FVector xVel;
+	FVector zVel;
 
 	FVector direction;
 
