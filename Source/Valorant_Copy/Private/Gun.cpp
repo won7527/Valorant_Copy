@@ -9,6 +9,7 @@
 #include "Enemy.h"
 #include "Engine/DamageEvents.h"
 #include "Math/UnrealMathUtility.h"
+#include "Math/Vector.h"
 
 //#include "Components/SceneComponent.h"
 
@@ -40,6 +41,8 @@ AGun::AGun()
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *FirstPersonCameraComponent->GetForwardVector().ToString());
 	
 }
 
@@ -52,7 +55,7 @@ void AGun::Tick(float DeltaTime)
 
 		currentTime += DeltaTime;
 		if (currentTime > TimeBetweenShots) {
-			if (recoilCount <= 7) {
+			if (recoilCount < 7) {
 				APawn::AddControllerPitchInput(-0.5f);
 				recoilCount += 1;
 				
@@ -91,6 +94,8 @@ void AGun::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AGun::StartFire);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AGun::StopFire);
+	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AGun::ReloadInput);
+	
 
 	
 
@@ -103,8 +108,12 @@ void AGun::StartFire()
 {
 	//rebound = FVector(0,0,0);
 	//rebound = FireShot(rebound);
-	isFire = true;
-	GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AGun::FireShot, TimeBetweenShots, true);
+	if (ammunition > 0) {
+		isFire = true;
+		GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AGun::FireShot, TimeBetweenShots, true);
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("no ammo")));
+	}
 }
 
 void AGun::StopFire()
@@ -113,6 +122,8 @@ void AGun::StopFire()
 	rebound = FVector(0,0,0);
 	recoilCount = 0;
 	reboundCount = 0;
+	YDir = FVector(0, 0, 0);
+	ZDir = FVector(0, 0, 0);
 	isFire = false;
 }
 
@@ -120,7 +131,8 @@ void AGun::FireShot()
 {
 	FHitResult Hit;
 
-	
+	//총의 탄퍼짐은 EndTrace로 조정
+	//일정 패턴은 카메라 움직임으로 조정
 
 	//카메라를 위로 올리는 반동
 	//CamPitch = FirstPersonCameraComponent->GetRelativeRotation() + FRotator(10.0f, 0, 0);
@@ -133,20 +145,62 @@ void AGun::FireShot()
 		rebound += FVector(0, 0, reZ);
 		reboundCount++;
 	}*/
-
-	if (reboundCount <= 7) {
-		rebound.Z += 0.03f;
+	if (reboundCount == 7) {
+		reboundOrigin = rebound;
 	}
-	else if (reboundCount > 7) {
-		reX += FMath::RandRange(0.01f, 0.03f);
-		reY += FMath::RandRange(0.01f, 0.03f);
-		reZ += FMath::RandRange(0.01f, 0.03f);
-		rebound=FVector(reX, reY, reZ);
+	
+	//7발 까지는 패턴이 일정하다
+	switch (reboundCount) {
+	case 0:
+		YDir = FirstPersonCameraComponent->GetRightVector() * 0;
+		rebound *= 0;
+		reboundCount++;
+		break;
+	case 1:
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(-0.01f, 0.01f);
+		rebound.Z += FMath::RandRange(0.005f, 0.01f);
+		reboundCount++;
+		break;
+	case 2:
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(-0.01f, 0.01f);
+		rebound.Z += FMath::RandRange(0.005f, 0.01f);
+		reboundCount++;
+		break;
+	case 3:
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.01f, 0.17f);
+		rebound.Z += FMath::RandRange(0.05f, 0.06f);
+		reboundCount++;
+		break;
+	case 4:
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.01f, 0.02f);
+		rebound.Z += FMath::RandRange(0.05f, 0.06f);
+		reboundCount++;
+		break;
+	case 5:
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.02f, 0.03f);
+		rebound.Z += FMath::RandRange(0.05f, 0.06f);
+		reboundCount++;
+		break;
+	case 6:
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.03f, 0.04f);
+		rebound.Z += FMath::RandRange(0.05f, 0.06f);
+		reboundCount++;
+		break;
+	}
+	if (reboundCount > 6) {
+		//rebound = reboundOrigin;
+		//reX = FMath::RandRange(0.1, 0.3);
+		reY = FMath::RandRange(-0.05f, 0.05f);
+		reZ = FMath::RandRange(-0.05f, 0.05f);
+		YDir = FirstPersonCameraComponent->GetRightVector() * reY;
+		ZDir = FirstPersonCameraComponent->GetUpVector() * reZ;
+		//rebound+=FVector(reX, reY, reZ);
+		reboundCount++;
 	}
 	
 	const float WeaponRange = 20000.0f;
 	const FVector StartTrace = FirstPersonCameraComponent->GetComponentLocation();
-	const FVector EndTrace = ((FirstPersonCameraComponent->GetForwardVector()+rebound)* WeaponRange) + StartTrace;
+	const FVector EndTrace = (((FirstPersonCameraComponent->GetForwardVector()+rebound)+YDir+ZDir)* WeaponRange) + StartTrace;
 
 	FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);  
 	
@@ -186,8 +240,18 @@ void AGun::FireShot()
 			Animinstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
-	//reboundForce += FVector(0,0,0.1f);
-	//return reboundForce;
+	
+	
+	//탄약이 0 이되면 사격종료
+	ammunition--;
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(" %d, isFrie? = %d"), ammunition, isFire));
+
+	if (ammunition <= 0) {
+		StopFire();
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("no ammo")));
+	}
 
 }
 
@@ -199,4 +263,15 @@ void AGun::Vertical(float AxisValue) {
 
 void AGun::Horizontal(float AxisValue) {
 	AddMovementInput(GetActorRightVector() * AxisValue);
+}
+
+void AGun::ReloadInput() {
+	if (isFire == false) {
+		GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AGun::Reload, TimeReload, false);
+	}
+}
+
+void AGun::Reload()
+{
+	ammunition = 25;
 }

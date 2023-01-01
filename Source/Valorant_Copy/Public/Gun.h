@@ -35,6 +35,9 @@ public:
 	float TimeBetweenShots;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	float TimeReload=3.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	class UParticleSystem* MuzzleParticles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
@@ -48,6 +51,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	FTimerHandle TimerHandle_HandleRefire;
+	FTimerHandle TimerHandle_Reload;
 
 public:	
 	// Called every frame
@@ -59,6 +63,15 @@ public:
 	void StartFire();
 	void StopFire();
 	void FireShot();
+	void ReloadInput();
+	void Reload();
+
+	//탄약
+	int32 ammunition=25;
+
+	//위젯 탄약불러오기
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE int32 GetAmmo() { return ammunition;}
 
 
 private:
@@ -70,6 +83,8 @@ private:
 	FVector ShotDirection;
 	//반동값
 	FVector rebound=FVector(0,0,0);
+	//반동 수직 상승 값 저장
+	FVector reboundOrigin = FVector(0, 0, 0);
 	//카메라 피치 값
 	//FRotator CamPitch;
 
@@ -90,5 +105,9 @@ private:
 	float reZ;
 	float reX;
 	float reY;
+
+	//카메라 방향 백터 변수
+	FVector YDir;
+	FVector ZDir;
 
 };
