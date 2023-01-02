@@ -43,14 +43,19 @@ public:
 	float walkSpeed = 100.0f;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-	float runSpeed = 800.0f;
+	float runSpeed = 300.0f;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float dashDistance = 3000.0f;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float jumpdashDistance = 2000.0f;
-	
+
+	float xValue;
+	float yValue;
+
+	bool keepPressed;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AActor> SmokeGrenade;
 
@@ -62,13 +67,24 @@ public:
 	class AKnife* knife2;
 	class AKnife* knife3;
 	class AKnife* knife4;
+	class ASmokeGrenade* smoke;
+	FTimerHandle KnifeTime;
+	FTimerHandle KnifeTime1;
+	FTimerHandle KnifeTime2;
+	FTimerHandle KnifeTime3;
+
+	TArray< AKnife*> knifeArray;
+
+	
 
 	int32 MaxKnife = 0;
 	FVector DeactivatedLocation;
 	FVector ActivatedLocation = GetActorLocation();
 
+	FVector DashDir;
 
 	FVector direction;
+	
 
 	UFUNCTION()
 	void Horizontal(float value);
@@ -87,5 +103,11 @@ public:
 
 	void Smoke();
 
-	void KnifeThrow();
+	void SmokeControlEnd();
+
+	void KnifeSetting();
+
+	void Fire();
+
+	void FireSp();
 };

@@ -24,13 +24,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = BulletSettings)
-	float moveSpeed = 1000.0f;
+	float moveSpeed = 3000.0f;
 
 	void KnifeThrowing();
 	void KnifeDirectionReset();
 
-private:
-
 	FVector direction;
+
+private:
 
 };
