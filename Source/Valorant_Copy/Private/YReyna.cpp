@@ -217,8 +217,8 @@ void AYReyna::EyeShotSkill() {
 
 	// 라인트레이스는 캐릭터로부터 1000 떨어진 위치까지 따라간다 
 	//  >> 10 부터 1000까지의 범위로 지정할 수 있도록 바꿔야한다
-	FVector TraceStart = yReynaCamComp->GetComponentLocation();
-	FVector TraceEnd = yReynaCamComp->GetComponentLocation() + GetActorForwardVector() * 1000.0f;
+	FVector TraceStart = GetActorLocation();
+	FVector TraceEnd = GetActorLocation() + GetActorForwardVector() * 1000.0f;
 	                                                               // 1000을 화면에 클릭하는 위치를
 																   //가리키는 함수로 만들어줘야하지 않을까
 

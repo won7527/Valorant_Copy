@@ -48,6 +48,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = Camera)
 		class UCameraComponent* yReynaCamComp;
 
+
+
 	//1인칭 카메라 추가
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* FPSMesh;
