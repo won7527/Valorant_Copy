@@ -33,9 +33,8 @@ void ASmokeGrenade::Tick(float DeltaTime)
 
 	direction = camForward;
 	SetActorLocation(GetActorLocation() + direction * moveSpeed * DeltaTime);*/
-	float a = -0.5f;
-	//SetActorLocation(FVector(GetActorLocation().X + (xVel.X, 0, (GetActorLocation().Z + zVel.Z + a * DeltaTime))));
-	
+	initS = 1;
+	SetActorLocation(GetActorLocation() + FVector(initS * direction.X + initS * direction.Y + initS * direction.Z - 5* DeltaTime));
 }
 
 void ASmokeGrenade::KeepPressed()
@@ -44,8 +43,6 @@ void ASmokeGrenade::KeepPressed()
 	angle = camManager->GetCameraRotation().Pitch;
 	FVector camForward = camManager->GetCameraRotation().Vector();
 	direction = camForward;
-	xVel = (direction * FMath::Cos(angle));
-	zVel = (direction * FMath::Sin(angle));
 	keepPressed = true;
 }
 

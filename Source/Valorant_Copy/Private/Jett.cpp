@@ -211,7 +211,7 @@ void AJett::Dash()
 
 void AJett::Smoke()
 {
-	smoke->SetActorLocation(GetActorLocation());
+
 	smoke->KeepPressed();
 
 }

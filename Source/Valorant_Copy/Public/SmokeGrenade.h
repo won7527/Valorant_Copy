@@ -33,9 +33,7 @@ public:
 	float moveSpeed = 1000.0f;
 	bool keepPressed;
 	float angle;
-	FVector xVel;
-	FVector zVel;
-
+	float initS;
 	FVector direction;
 
 private:
