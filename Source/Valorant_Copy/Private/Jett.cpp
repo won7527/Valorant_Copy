@@ -21,8 +21,16 @@ AJett::AJett()
 void AJett::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	FVector Location = GetActorLocation() + (100, 0, 0);
+
+	const FVector LocationS = GetActorLocation();
+	const FRotator RotationS = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(SmokeGrenade, LocationS, RotationS);
+	for (TActorIterator<ASmokeGrenade>it(GetWorld()); it; ++it)
+	{
+		smoke = *it;
+	}
+
+	FVector Location = GetActorLocation() + FVector(0, 0, -200);
 	DeactivatedLocation = Location;
 	FRotator Rotation = GetActorRotation();
 	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
@@ -30,35 +38,37 @@ void AJett::BeginPlay()
 	{
 		knife0 = *it0;
 	}
-	FVector Location1 = GetActorLocation() + (10, 0, 0);
-	FRotator Rotation1 = GetActorRotation();
+;
 	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
 	for (TActorIterator<AKnife>it1(GetWorld()); it1; ++it1)
 	{
 		
 		knife1 = *it1;
 	}
-	FVector Location2 = GetActorLocation() + (10, 0, 0);
-	FRotator Rotation2 = GetActorRotation();
+	
 	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
 	for (TActorIterator<AKnife>it2(GetWorld()); it2; ++it2)
 	{
 		knife2 = *it2;
 	}
-	FVector Location3 = GetActorLocation() + (10, 0, 0);
-	FRotator Rotation3 = GetActorRotation();
+	
 	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
 	for (TActorIterator<AKnife>it3(GetWorld()); it3; ++it3)
 	{
 		knife3 = *it3;
 	}
-	FVector Location4 = GetActorLocation() + (10, 0, 0);
-	FRotator Rotation4 = GetActorRotation();
+	
 	GetWorld()->SpawnActor<AActor>(Knife, Location, Rotation);
 	for (TActorIterator<AKnife>it4(GetWorld()); it4; ++it4)
 	{
 		knife4 = *it4;
 	}
+
+	knifeArray.Add(knife0);
+	knifeArray.Add(knife1);
+	knifeArray.Add(knife2);
+	knifeArray.Add(knife3);
+	knifeArray.Add(knife4);
 
 }
 
@@ -66,8 +76,43 @@ void AJett::BeginPlay()
 void AJett::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	
+
+	DashDir = GetActorForwardVector();
+
+	if (MaxKnife == 5)
+	{
+
+		//APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+		//FVector camLocation = camManager->GetCameraLocation();
+		knife0->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200 + GetActorRightVector() * -200);
+		knife1->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200 + GetActorRightVector() * 200);
+		knife2->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200 + GetActorRightVector() * -100);
+		knife3->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200 + GetActorRightVector() * 100);
+		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200);
+
+	}															  
+	else if (MaxKnife == 4)
+	{
+		knife1->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 200);
+		knife2->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * -100);
+		knife3->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 100);
+		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200);
+	}
+	else if (MaxKnife == 3)
+	{
+		knife2->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * -100);
+		knife3->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 100);
+		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200);
+	}
+	else if (MaxKnife == 2)
+	{
+		knife3->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 100);
+		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200);
+	}
+	else if (MaxKnife == 1)
+	{
+		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200);
+	}
 
 }
 
@@ -86,10 +131,11 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("JumpDash"), IE_Pressed, this, &AJett::JumpDash);
 	PlayerInputComponent->BindAction(TEXT("Dash"), IE_Pressed, this, &AJett::Dash);
 	PlayerInputComponent->BindAction(TEXT("Smoke"), IE_Pressed, this, &AJett::Smoke);
-	PlayerInputComponent->BindAction(TEXT("KnifeThrow"), IE_Pressed, this, &AJett::KnifeThrow);
+	PlayerInputComponent->BindAction(TEXT("Smoke"), IE_Released, this, &AJett::SmokeControlEnd);
+	PlayerInputComponent->BindAction(TEXT("KnifeSet"), IE_Pressed, this, &AJett::KnifeSetting);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AJett::Fire);
+	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Pressed, this, &AJett::FireSp);
 	
-	
-
 }
 
 void AJett::Turn(float value)
@@ -107,7 +153,10 @@ void AJett::Horizontal(float value)
 	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
 	direction.Normalize();
 	AddMovementInput(direction, value);
-	
+	//CharacterMoveDir = direction * value;
+	//CharacterMoveDir.Z = 0;
+	//CharacterMoveDir.Normalize();
+	yValue = value;
 }
 
 void AJett::Vertical(float value)
@@ -116,7 +165,10 @@ void AJett::Vertical(float value)
 	direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
 	direction.Normalize();
 	AddMovementInput(direction, value);
-	
+	//CharacterMoveDir = direction * value;
+	//CharacterMoveDir.Z = 0;
+	//CharacterMoveDir.Normalize();
+	xValue = value;
 }
 
 void AJett::InputJump()
@@ -144,65 +196,111 @@ void AJett::JumpDash()
 
 void AJett::Dash()
 {
-	direction = GetActorForwardVector();
-	direction.Normalize();
-	LaunchCharacter(direction * dashDistance, true, true);
-	
-}
-
-void AJett::Smoke()
-{
-	const FVector Location = GetActorLocation();
-	const FRotator Rotation = GetActorRotation();
-	GetWorld()->SpawnActor<AActor>(SmokeGrenade, Location, Rotation);
-}
-
-void AJett::KnifeThrow()
-{
-	if (MaxKnife == 0)
+	if (xValue == 0 && yValue == 0)
 	{
-		knife0->KnifeDirectionReset();
-		knife1->KnifeDirectionReset();
-		knife2->KnifeDirectionReset();
-		knife3->KnifeDirectionReset();
-		knife4->KnifeDirectionReset();
-		knife0->SetActorLocation(GetActorLocation() + (100, 100, 100));
-		knife1->SetActorLocation(GetActorLocation());
-		knife2->SetActorLocation(GetActorLocation());
-		knife3->SetActorLocation(GetActorLocation());
-		knife4->SetActorLocation(GetActorLocation());
-		MaxKnife = 5;
+		LaunchCharacter(GetActorForwardVector() * dashDistance, true, true);
 	}
 	else
 	{
-		if (MaxKnife == 5)
-		{
-			knife0->SetActorTickEnabled(false);
-			knife0->KnifeThrowing();
-			MaxKnife -= 1;
+		DashDir.X = xValue;
+		DashDir.Y = yValue;
+		LaunchCharacter(GetActorRotation().RotateVector(DashDir) * dashDistance, true, true);
+	}
+}
 
-		}
-		else if (MaxKnife == 4)
-		{
-			knife1->KnifeThrowing();
-			MaxKnife -= 1;
-		}
-		else if (MaxKnife == 3)
-		{
-			knife2->KnifeThrowing();
-			MaxKnife -= 1;
-		}
-		else if (MaxKnife == 2)
-		{
-			knife3->KnifeThrowing();
-			MaxKnife -= 1;
-		}
-		else
-		{
-			knife4->KnifeThrowing();
-			MaxKnife -= 1;
-		}
 
+void AJett::Smoke()
+{
+
+	smoke->KeepPressed();
+
+}
+
+void AJett::SmokeControlEnd()
+{
+	
+	smoke->ReleasedC();
+}
+
+
+void AJett::KnifeSetting()
+{
+	if (MaxKnife == 0)
+	{
+		for (int32 i = 0; i < knifeArray.Num(); i++)
+		{
+			knifeArray[i]->KnifeDirectionReset();
+		}
+		MaxKnife = 5;
+	}
+
+}
+
+void AJett::Fire()
+{
+	if (MaxKnife == 5)
+	{
+		knife0->KnifeThrowing();
+		MaxKnife -= 1;
+
+	}
+	else if (MaxKnife == 4)
+	{
+		knife1->KnifeThrowing();
+		MaxKnife -= 1;
+	}
+	else if (MaxKnife == 3)
+	{
+		knife2->KnifeThrowing();
+		MaxKnife -= 1;
+	}
+	else if (MaxKnife == 2)
+	{
+		knife3->KnifeThrowing();
+		MaxKnife -= 1;
+	}
+	else if (MaxKnife == 1)
+	{
+		knife4->KnifeThrowing();
+		MaxKnife -= 1;
+	}
+
+}
+
+void AJett::FireSp()
+{
+
+	if (MaxKnife == 5)
+	{
+		Fire();
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime, this, &AJett::Fire, 0.2f, false);
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime1, this, &AJett::Fire, 0.4f, false);
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime2, this, &AJett::Fire, 0.6f, false);
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime3, this, &AJett::Fire, 0.8f, false);
+	
+	}
+	else if (MaxKnife == 4)
+	{
+		Fire();
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime, this, &AJett::Fire, 0.2f, false);
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime1, this, &AJett::Fire, 0.4f, false);
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime2, this, &AJett::Fire, 0.6f, false);
+	}
+	else if (MaxKnife == 3)
+	{
+		Fire();
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime, this, &AJett::Fire, 0.2f, false);
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime1, this, &AJett::Fire, 0.4f, false);
+	}
+
+	else if (MaxKnife == 2)
+	{
+		Fire();
+		GetWorld()->GetTimerManager().SetTimer(KnifeTime, this, &AJett::Fire, 0.2f, false);
+	}
+	else if (MaxKnife == 1)
+	{
+		Fire();
 	}
 
 }
