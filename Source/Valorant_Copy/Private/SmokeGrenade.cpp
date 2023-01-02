@@ -4,6 +4,7 @@
 #include "SmokeGrenade.h"
 
 
+
 // Sets default values
 ASmokeGrenade::ASmokeGrenade()
 {
@@ -17,12 +18,6 @@ void ASmokeGrenade::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
-	//FVector camLocation = camManager->GetCameraLocation();
-	FVector camForward = camManager->GetCameraRotation().Vector();
-
-	direction = camForward;
-
 	
 }
 
@@ -31,6 +26,28 @@ void ASmokeGrenade::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	SetActorLocation(GetActorLocation() + direction * moveSpeed * DeltaTime);
+	
+	/*APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+	//FVector camLocation = camManager->GetCameraLocation();
+	FVector camForward = camManager->GetCameraRotation().Vector();
+
+	direction = camForward;
+	SetActorLocation(GetActorLocation() + direction * moveSpeed * DeltaTime);*/
+	initS = 1;
+	SetActorLocation(GetActorLocation() + FVector(initS * direction.X + initS * direction.Y + initS * direction.Z - 5* DeltaTime));
 }
 
+void ASmokeGrenade::KeepPressed()
+{
+	APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+	angle = camManager->GetCameraRotation().Pitch;
+	FVector camForward = camManager->GetCameraRotation().Vector();
+	direction = camForward;
+	keepPressed = true;
+}
+
+void ASmokeGrenade::ReleasedC()
+{
+	keepPressed = false;
+	
+}
