@@ -23,6 +23,12 @@ public:
 	virtual void BeginPlay() override;
 
 
-	UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
-		int32 ammo=25;
+	//UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
+		//int32 ammo=25;
+
+	class AJett* jet;
+
+private:
+
+	int32 ammo;
 };
