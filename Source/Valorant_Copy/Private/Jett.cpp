@@ -15,6 +15,7 @@
 #include "Engine/DamageEvents.h"
 #include "Math/UnrealMathUtility.h"
 #include "Math/Vector.h"
+#include "Valorant.h"
 
 // Sets default values
 AJett::AJett()
@@ -45,6 +46,7 @@ AJett::AJett()
 void AJett::BeginPlay()
 {
 	Super::BeginPlay();
+
 
 	const FVector LocationS = GetActorLocation();
 	const FRotator RotationS = GetActorRotation();
@@ -505,6 +507,13 @@ void AJett::FireShot()
 
 	//탄약이 0 이되면 사격종료
 	ammunition--;
+
+	//탄소모를 게임모드에 알린다
+	AGameModeBase* gm =  UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->MinusAmmo(1);
+	UE_LOG(LogTemp, Warning, TEXT("%d"), myGM->GetAmmo());
+
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(" %d, isFrie? = %d"), ammunition, isFire));
 

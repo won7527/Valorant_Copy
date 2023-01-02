@@ -16,6 +16,11 @@ class VALORANT_COPY_API UPlayerUI : public UUserWidget
 
 public:
 
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UIammo; 
+
 	void PrintAmmo();
+
+	class AJett* jet;
 
 };

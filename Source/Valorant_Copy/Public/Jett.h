@@ -187,4 +187,7 @@ private:
 	//카메라 방향 백터 변수
 	FVector YDir;
 	FVector ZDir;
+
+	//플레이어 위젯 포인터
+	class UMainWidget* player_UI;
 };

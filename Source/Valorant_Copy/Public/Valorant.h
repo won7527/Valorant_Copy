@@ -16,19 +16,17 @@ class VALORANT_COPY_API AValorant : public AGameModeBase
 	
 public:
 	
-	//게임모드에서 사용할 블루프린트 위젯을 설정한다
-	UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
-		TSubclassOf<class UPlayerUI> playerUI;
-
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE int32 GetAmmo() { return ammo;}
 
-	//UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
-		//int32 ammo=25;
+	UPROPERTY(EditAnywhere, Category=MyDefaultSetting)
+	TSubclassOf<class UPlayerUI> playerWidget;
 
-	class AJett* jet;
+	void MinusAmmo(int32 count);
 
 private:
+	int32 ammo = 25;
 
-	int32 ammo;
 };
