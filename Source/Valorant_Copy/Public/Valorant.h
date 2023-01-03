@@ -24,7 +24,20 @@ public:
 	UPROPERTY(EditAnywhere, Category=MyDefaultSetting)
 	TSubclassOf<class UPlayerUI> playerWidget;
 
+	UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
+		TSubclassOf<class UCharacterSelectWidget> SelectWidgetBP;
+
 	void MinusAmmo(int32 count);
+
+	void ReloadAmmo();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void Select1();
+
+	class UPlayerUI* player_UI;
+	class AJett* player;
+	class UCharacterSelectWidget* SelectWidget;
+
 
 private:
 	int32 ammo = 25;

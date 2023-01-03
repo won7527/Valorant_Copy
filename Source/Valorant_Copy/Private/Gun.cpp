@@ -88,13 +88,13 @@ void AGun::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	//PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &AGun::Vertical);
-	//PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &AGun::Horizontal);
-	//PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &APawn::AddControllerPitchInput);
-	//PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APawn::AddControllerYawInput);
-	//PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AGun::StartFire);
-	//PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AGun::StopFire);
-	//PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AGun::ReloadInput);
+	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &AGun::Vertical);
+	PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &AGun::Horizontal);
+	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AGun::StartFire);
+	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AGun::StopFire);
+	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AGun::ReloadInput);
 	
 
 }

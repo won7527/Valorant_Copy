@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 #include "PlayerUI.generated.h"
 
 /**
@@ -19,8 +20,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
 	class UTextBlock* UIammo; 
 
-	void PrintAmmo();
+	//void PrintAmmo();
 
-	class AJett* jet;
 
 };

@@ -373,8 +373,6 @@ void AJett::StartFire()
 	if (ammunition > 0) {
 		isFire = true;
 		GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("no ammo")));
 	}
 
 }
@@ -534,6 +532,9 @@ void AJett::ReloadInput() {
 void AJett::Reload()
 {
 	ammunition = 25;
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->ReloadAmmo();
 }
 
 int32 AJett::GetAmmo()
