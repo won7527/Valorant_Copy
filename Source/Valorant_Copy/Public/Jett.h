@@ -45,6 +45,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	class UParticleSystem* ImpactParticles;
 
+	//»ñ°Ç º¯¼ö
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	class USkeletalMeshComponent* FP_Shotgun;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	class USoundBase* ShotgunSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	class UParticleSystem* ShotgunMuzzleParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	class UParticleSystem* ShotgunImpactParticles;
+	//----------------------
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -154,6 +168,10 @@ public:
 
 	//ÃÑ¾Ë°¹¼ö¸¦ °¡Á®¿Â´Ù
 	int32 GetAmmo();
+
+	//¼¦°Ç ÃÑ¾Ë °¹¼ö
+	UPROPERTY(EditAnywhere, Category = Shotgun)
+	int32 pellet=10;
 	
 
 

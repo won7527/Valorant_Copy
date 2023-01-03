@@ -39,6 +39,13 @@ AJett::AJett()
 	FP_Gun->CastShadow = false;
 	FP_Gun->SetupAttachment(RootComponent);
 
+	//¼¦°Ç ¼±¾ð
+	FP_Shotgun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Shotgun"));
+	FP_Shotgun->SetOnlyOwnerSee(true);
+	FP_Shotgun->bCastDynamicShadow = false;
+	FP_Shotgun->CastShadow = false;
+	FP_Shotgun->SetupAttachment(RootComponent);
+
 	
 }
 
@@ -374,6 +381,46 @@ void AJett::StartFire()
 		isFire = true;
 		GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
 	}
+	//¼¦°Ç ¹ß»ç
+	for (int i = 0; i < pellet; i++) {
+		FHitResult Hit;
+		const float ShotgunRange = 20000.0f;
+		const FVector ShotgunStartTrace = FirstPersonCameraComponent->GetComponentLocation();
+
+		//¹ú¾îÁú ÃÑ °Å¸®
+		//FVector totalSpace = FirstPersonCameraComponent->GetRightVector()*(- 0.5 * (pellet - 1) * 0.1f);
+		//FVector space = FirstPersonCameraComponent->GetRightVector() * (0.1f * i);
+
+		float yRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+		float ZRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+		FVector Y = FirstPersonCameraComponent->GetRightVector() * yRand;
+		FVector Z = FirstPersonCameraComponent->GetUpVector() * ZRand;
+
+		const FVector ShotgunEndTrace = ((FirstPersonCameraComponent->GetForwardVector()+Y+Z) * ShotgunRange) + ShotgunStartTrace;
+
+		FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+
+		if (GetWorld()->LineTraceSingleByChannel(Hit, ShotgunStartTrace, ShotgunEndTrace, ECC_Visibility, QueryParams)) {
+
+			if (ShotgunImpactParticles) {
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+
+				if (GEngine)
+					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+			}
+			
+		}
+	
+	}
+
+	if (ShotgunMuzzleParticles) {
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunMuzzleParticles, FP_Shotgun->GetSocketTransform(FName("Muzzle")));
+	}
+
+	if (ShotgunSound != nullptr) {
+		UGameplayStatics::PlaySoundAtLocation(this, ShotgunSound, GetActorLocation());
+	}
+	
 
 }
 
