@@ -57,7 +57,25 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
 	class UParticleSystem* ShotgunImpactParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	float ShotgunTimeReload = 1.0f;
 	//----------------------
+	//Àú°ÝÃÑ º¯¼ö
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class USkeletalMeshComponent* FP_Snipergun;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class USoundBase* SniperSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class UParticleSystem* SniperMuzzleParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class UParticleSystem* SniperImpactParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	float SniperTimeReload = 5;
 
 protected:
 	// Called when the game starts or when spawned
@@ -65,6 +83,10 @@ protected:
 
 	FTimerHandle TimerHandle_HandleRefire;
 	FTimerHandle TimerHandle_Reload;
+	FTimerHandle TimerHandle_ShotgunReload;
+	FTimerHandle TimerHandle_SniperReload;
+	//¼¦°Ç µô·¹ÀÌ
+	FTimerHandle TimerHandle_ShotgunDelay;
 
 public:	
 	// Called every frame
@@ -78,9 +100,23 @@ public:
 	void FireShot();
 	void ReloadInput();
 	void Reload();
+	void Weapon1Use();
+	void Weapon2Use();
+	void Weapon3Use();
+	//½º³ªÀÌÆÛ Á¶ÁØ
+	void SniperAim();
+	//ÀåÀü
+	void ShotgunReload();
+	void SniperReload();
+	//¼¦°Ç ¹ß»ç°£°Ý 
+	void ShotgunDelay();
 
 	//Åº¾à
 	int32 ammunition = 25;
+	//¼¦°Ç Åº¾à
+	int32 shotgunAmmo = 8;
+	int32 maxShotgunAmmo = 8;
+	int32 sniperAmmo = 5;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = PlayerSettings)
 	class UBoxComponent* boxComp;
@@ -172,6 +208,13 @@ public:
 	//¼¦°Ç ÃÑ¾Ë °¹¼ö
 	UPROPERTY(EditAnywhere, Category = Shotgun)
 	int32 pellet=10;
+
+	UPROPERTY(EditAnywhere, Category = Shotgun)
+	bool isWeapon1Use = false;
+	UPROPERTY(EditAnywhere, Category = Shotgun)
+	bool isWeapon2Use = false;
+	UPROPERTY(EditAnywhere, Category = Shotgun)
+	bool isWeapon3Use = false;
 	
 
 
@@ -197,6 +240,8 @@ private:
 
 	//¹ß»ç¿©ºÎ
 	bool isFire = false;
+	bool isShotgunDelay = false;
+	//ÃÑ ±³Ã¼¿©ºÎ
 
 	float reZ;
 	float reX;

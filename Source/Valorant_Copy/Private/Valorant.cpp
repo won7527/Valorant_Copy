@@ -4,6 +4,7 @@
 #include "Valorant.h"
 #include "PlayerUI.h"
 #include "CharacterSelectWidget.h"
+#include "SniperAimWidget.h"
 #include "Jett.h"
 #include "MainWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,6 +17,7 @@ void AValorant::BeginPlay()
 	
 	player_UI = CreateWidget<UPlayerUI>(GetWorld(), playerWidget);
 	SelectWidget = CreateWidget<UCharacterSelectWidget>(GetWorld(), SelectWidgetBP);
+	sniperWidget = CreateWidget<USniperAimWidget>(GetWorld(), SniperAimWidgetBP);
 	AActor* playerActor = UGameplayStatics::GetActorOfClass(GetWorld(), AJett::StaticClass());
 
 	player = Cast<AJett>(playerActor);
@@ -25,11 +27,13 @@ void AValorant::BeginPlay()
 		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	}
 
+
 	if (player_UI != nullptr) {
 		player_UI->UIammo->SetText(FText::AsNumber(ammo));
 		player_UI->AddToViewport();
 		//player_UI->PrintAmmo();
 	}
+
 }
 
 void AValorant::MinusAmmo(int32 count)
@@ -44,5 +48,49 @@ void AValorant::ReloadAmmo()
 	player_UI->UIammo->SetText(FText::AsNumber(ammo));
 }
 
+void AValorant::ShotgunMinusAmmo()
+{
+	shotgunAmmo--;
+	player_UI->UIammo->SetText(FText::AsNumber(shotgunAmmo));
+}
 
+void AValorant::ShotgunReloadAmmo()
+{
+	shotgunAmmo++;
+	player_UI->UIammo->SetText(FText::AsNumber(shotgunAmmo));
+}
+
+void AValorant::SniperMinusAmmo()
+{
+	sniperAmmo--;
+	player_UI->UIammo->SetText(FText::AsNumber(sniperAmmo));
+}
+
+void AValorant::SniperReloadAmmo()
+{
+	sniperAmmo = 5;
+	player_UI->UIammo->SetText(FText::AsNumber(sniperAmmo));
+}
+
+void AValorant::ChangeWeapon()
+{
+	if (player->isWeapon1Use == true) {
+		player_UI->UIammo->SetText(FText::AsNumber(ammo));
+	}
+
+	if (player->isWeapon2Use == true) {
+		player_UI->UIammo->SetText(FText::AsNumber(shotgunAmmo));
+	}
+
+	if (player->isWeapon3Use == true) {
+		player_UI->UIammo->SetText(FText::AsNumber(sniperAmmo));
+	}
+}
+
+void AValorant::SniperAim()
+{
+	if (sniperWidget != nullptr) {
+		sniperWidget->AddToViewport();
+	}
+}
 

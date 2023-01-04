@@ -46,6 +46,13 @@ AJett::AJett()
 	FP_Shotgun->CastShadow = false;
 	FP_Shotgun->SetupAttachment(RootComponent);
 
+	//저격 선언
+	FP_Snipergun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Sniper"));
+	FP_Snipergun->SetOnlyOwnerSee(true);
+	FP_Snipergun->bCastDynamicShadow = false;
+	FP_Snipergun->CastShadow = false;
+	FP_Snipergun->SetupAttachment(RootComponent);
+
 	
 }
 
@@ -54,6 +61,7 @@ void AJett::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Weapon1Use();
 
 	const FVector LocationS = GetActorLocation();
 	const FRotator RotationS = GetActorRotation();
@@ -202,6 +210,14 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AJett::StartFire);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AJett::StopFire);
 	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AJett::ReloadInput);
+	//무기 교체
+	PlayerInputComponent->BindAction(TEXT("Weapon1"), IE_Pressed, this, &AJett::Weapon1Use);
+	PlayerInputComponent->BindAction(TEXT("Weapon2"), IE_Pressed, this, &AJett::Weapon2Use);
+	PlayerInputComponent->BindAction(TEXT("Weapon3"), IE_Pressed, this, &AJett::Weapon3Use);
+	//조준
+	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Pressed, this, &AJett::SniperAim);
+
+
 	
 }
 
@@ -377,49 +393,124 @@ void AJett::StartFire()
 {
 	//rebound = FVector(0,0,0);
 	//rebound = FireShot(rebound);
-	if (ammunition > 0) {
-		isFire = true;
-		GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
+	//1을 눌러서 총을 바꿨을 때
+	if (isWeapon1Use == true) {
+
+		if (ammunition > 0) {
+			isFire = true;
+			GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
+		}
+
 	}
 	//샷건 발사
-	for (int i = 0; i < pellet; i++) {
-		FHitResult Hit;
-		const float ShotgunRange = 20000.0f;
-		const FVector ShotgunStartTrace = FirstPersonCameraComponent->GetComponentLocation();
+	if (isWeapon2Use == true) {
 
-		//벌어질 총 거리
-		//FVector totalSpace = FirstPersonCameraComponent->GetRightVector()*(- 0.5 * (pellet - 1) * 0.1f);
-		//FVector space = FirstPersonCameraComponent->GetRightVector() * (0.1f * i);
+		if (shotgunAmmo > 0) {
 
-		float yRand = FMath::RandRange(-0.05f*i, 0.05f*i);
-		float ZRand = FMath::RandRange(-0.05f*i, 0.05f*i);
-		FVector Y = FirstPersonCameraComponent->GetRightVector() * yRand;
-		FVector Z = FirstPersonCameraComponent->GetUpVector() * ZRand;
+			if (isShotgunDelay == false) {
 
-		const FVector ShotgunEndTrace = ((FirstPersonCameraComponent->GetForwardVector()+Y+Z) * ShotgunRange) + ShotgunStartTrace;
+				//사격을 시작하면 장전을 멈춘다
+				GetWorldTimerManager().ClearTimer(TimerHandle_ShotgunReload);
 
-		FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+				for (int i = 0; i < pellet; i++) {
+					FHitResult Hit;
+					const float ShotgunRange = 20000.0f;
+					const FVector ShotgunStartTrace = FirstPersonCameraComponent->GetComponentLocation();
 
-		if (GetWorld()->LineTraceSingleByChannel(Hit, ShotgunStartTrace, ShotgunEndTrace, ECC_Visibility, QueryParams)) {
+					//벌어질 총 거리
+					//FVector totalSpace = FirstPersonCameraComponent->GetRightVector()*(- 0.5 * (pellet - 1) * 0.1f);
+					//FVector space = FirstPersonCameraComponent->GetRightVector() * (0.1f * i);
 
-			if (ShotgunImpactParticles) {
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+					float yRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+					float ZRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+					FVector Y = FirstPersonCameraComponent->GetRightVector() * yRand;
+					FVector Z = FirstPersonCameraComponent->GetUpVector() * ZRand;
 
-				if (GEngine)
-					GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
-			}
+					const FVector ShotgunEndTrace = ((FirstPersonCameraComponent->GetForwardVector()+Y+Z) * ShotgunRange) + ShotgunStartTrace;
+
+					FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+
+					if (GetWorld()->LineTraceSingleByChannel(Hit, ShotgunStartTrace, ShotgunEndTrace, ECC_Visibility, QueryParams)) {
+
+						if (ShotgunImpactParticles) {
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+
+							//if (GEngine)
+								//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+						}
 			
-		}
+					}
 	
-	}
+				}
 
-	if (ShotgunMuzzleParticles) {
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunMuzzleParticles, FP_Shotgun->GetSocketTransform(FName("Muzzle")));
-	}
+				if (ShotgunMuzzleParticles) {
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunMuzzleParticles, FP_Shotgun->GetSocketTransform(FName("Muzzle")));
+				}
 
-	if (ShotgunSound != nullptr) {
-		UGameplayStatics::PlaySoundAtLocation(this, ShotgunSound, GetActorLocation());
+				if (ShotgunSound != nullptr) {
+					UGameplayStatics::PlaySoundAtLocation(this, ShotgunSound, GetActorLocation());
+				}
+				//탄을 소비한다
+				shotgunAmmo--;
+
+				//샷건 탄소모를 게임모드에 알린다
+				AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+				AValorant* myGM = Cast<AValorant>(gm);
+				myGM->ShotgunMinusAmmo();
+				//반동
+				APawn::AddControllerPitchInput(-1.2f);
+				APawn::AddControllerYawInput(-0.5f);
+
+				isShotgunDelay = true;
+				GetWorldTimerManager().SetTimer(TimerHandle_ShotgunDelay, this, &AJett::ShotgunDelay, 0.7f, false);
+			}
+
+		}
+
 	}
+	if (isWeapon3Use == true) {
+
+		if (sniperAmmo > 0) {
+
+			FHitResult SniperHit;
+
+			const float SniperRange = 20000.0f;
+			const FVector SniperStartTrace = FirstPersonCameraComponent->GetComponentLocation();
+
+			//도착지점
+			const FVector SniperEndTrace = FirstPersonCameraComponent->GetForwardVector()*SniperRange+SniperStartTrace;
+
+			FCollisionQueryParams SniperQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+
+			if (GetWorld()->LineTraceSingleByChannel(SniperHit, SniperStartTrace, SniperEndTrace, ECC_Visibility, SniperQueryParams)) {
+
+				if (SniperImpactParticles) {
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperImpactParticles, FTransform(SniperHit.ImpactNormal.Rotation(), SniperHit.ImpactPoint));
+
+					//if (GEngine)
+						//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+				}
+
+			}
+
+			if (SniperMuzzleParticles) {
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperMuzzleParticles, FP_Snipergun->GetSocketTransform(FName("Muzzle")));
+			}
+
+			if (SniperSound != nullptr) {
+				UGameplayStatics::PlaySoundAtLocation(this, SniperSound, GetActorLocation());
+			}
+
+			sniperAmmo--;
+			AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+			AValorant* myGM = Cast<AValorant>(gm);
+			myGM->SniperMinusAmmo();
+
+		}
+
+
+	}
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
 	
 
 }
@@ -571,20 +662,112 @@ void AJett::FireShot()
 }
 
 void AJett::ReloadInput() {
-	if (isFire == false) {
-		GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AJett::Reload, TimeReload, false);
+	if (isWeapon1Use == true) {
+		if (isFire == false) {
+			GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AJett::Reload, TimeReload, false);
+		}
+	}
+
+	if (isWeapon2Use == true) {
+		
+		GetWorldTimerManager().SetTimer(TimerHandle_ShotgunReload, this, &AJett::ShotgunReload, ShotgunTimeReload, true);
+		
+	}
+
+	if (isWeapon3Use == true) {
+		GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AJett::SniperReload, SniperTimeReload, false);
 	}
 }
 
 void AJett::Reload()
 {
 	ammunition = 25;
+	//장전할때마다 위젯에 업데이트를 한다
 	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 	AValorant* myGM = Cast<AValorant>(gm);
 	myGM->ReloadAmmo();
+}
+
+void AJett::ShotgunReload()
+{
+	if (shotgunAmmo < maxShotgunAmmo) {
+		shotgunAmmo += 1;
+		//장전을 게임모드에 알린다
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		AValorant* myGM = Cast<AValorant>(gm);
+		myGM->ShotgunReloadAmmo();
+		/*if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("reload")));*/
+
+	}
+	else if (shotgunAmmo >= maxShotgunAmmo) {
+		GetWorldTimerManager().ClearTimer(TimerHandle_ShotgunReload);
+	}
+}
+
+void AJett::SniperReload()
+{
+	sniperAmmo = 5;
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->SniperReloadAmmo();
+}
+
+void AJett::ShotgunDelay()
+{
+	isShotgunDelay = false;
 }
 
 int32 AJett::GetAmmo()
 {
 	return ammunition;
 }
+
+void AJett::Weapon1Use()
+{
+	isWeapon1Use = true;
+	isWeapon2Use = false;
+	isWeapon3Use = false;
+	FP_Shotgun->SetVisibility(false);
+	FP_Gun->SetVisibility(true);
+	FP_Snipergun->SetVisibility(false);
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->ChangeWeapon();
+}
+
+void AJett::Weapon2Use()
+{
+	isWeapon1Use = false;
+	isWeapon2Use = true;
+	isWeapon3Use = false;
+	FP_Shotgun->SetVisibility(true);
+	FP_Gun->SetVisibility(false);
+	FP_Snipergun->SetVisibility(false);
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->ChangeWeapon();
+}
+
+void AJett::Weapon3Use()
+{
+	isWeapon1Use = false;
+	isWeapon2Use = false;
+	isWeapon3Use = true;
+	FP_Shotgun->SetVisibility(false);
+	FP_Gun->SetVisibility(false);
+	FP_Snipergun->SetVisibility(true);
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->ChangeWeapon();
+}
+
+void AJett::SniperAim()
+{
+	if (isWeapon3Use == true) {
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		AValorant* myGM = Cast<AValorant>(gm);
+		myGM->SniperAim();
+	}
+}
+
