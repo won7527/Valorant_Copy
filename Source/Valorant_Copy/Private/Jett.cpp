@@ -216,6 +216,7 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("Weapon3"), IE_Pressed, this, &AJett::Weapon3Use);
 	//Á¶ÁØ
 	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Pressed, this, &AJett::SniperAim);
+	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Released, this, &AJett::SniperAim);
 
 
 	

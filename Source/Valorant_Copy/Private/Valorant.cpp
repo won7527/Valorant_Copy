@@ -90,7 +90,14 @@ void AValorant::ChangeWeapon()
 void AValorant::SniperAim()
 {
 	if (sniperWidget != nullptr) {
-		sniperWidget->AddToViewport();
+		if (isScope == false) {
+			sniperWidget->AddToViewport();
+			isScope = true;
+		}
+		else if (isScope == true) {
+			sniperWidget->RemoveFromParent();
+			isScope = false;
+		}
 	}
 }
 

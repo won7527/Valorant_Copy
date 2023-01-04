@@ -68,4 +68,5 @@ private:
 	int32 shotgunAmmo = 8;
 	int32 sniperAmmo = 5;
 
+	bool isScope = false;
 };
