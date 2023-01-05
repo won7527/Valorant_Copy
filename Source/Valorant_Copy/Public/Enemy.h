@@ -15,6 +15,13 @@ public:
 	// Sets default values for this actor's properties
 	AEnemy();
 
+	UPROPERTY(EditAnywhere)
+	class UBoxComponent* boxComp;
+
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* mesh;
+
+
 	
 
 protected:

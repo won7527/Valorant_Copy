@@ -507,6 +507,9 @@ void AJett::StartFire()
 			AValorant* myGM = Cast<AValorant>(gm);
 			myGM->SniperMinusAmmo();
 
+			APawn::AddControllerPitchInput(-4.0f);
+			//APawn::AddControllerYawInput(-0.0f);
+
 		}
 
 
@@ -769,6 +772,12 @@ void AJett::SniperAim()
 		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 		AValorant* myGM = Cast<AValorant>(gm);
 		myGM->SniperAim();
+		if (myGM->isScope == true) {
+			FirstPersonCameraComponent->SetFieldOfView(20.0f);
+		}
+		if (myGM->isScope != true) {
+			FirstPersonCameraComponent->SetFieldOfView(90.0f);
+		}
 	}
 }
 

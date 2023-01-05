@@ -2,12 +2,20 @@
 
 
 #include "Enemy.h"
+#include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	boxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("box"));
+	SetRootComponent(boxComp);
+	mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("mesh"));
+	mesh->SetupAttachment(RootComponent);
+
 
 }
 

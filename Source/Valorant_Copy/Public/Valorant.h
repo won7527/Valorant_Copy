@@ -61,6 +61,9 @@ public:
 	//스나 조준 위젯 변수
 	class USniperAimWidget* sniperWidget;
 
+	UPROPERTY(EditAnywhere)
+	bool isScope = false;
+
 
 private:
 	int32 ammo = 25;
@@ -68,5 +71,4 @@ private:
 	int32 shotgunAmmo = 8;
 	int32 sniperAmmo = 5;
 
-	bool isScope = false;
 };
