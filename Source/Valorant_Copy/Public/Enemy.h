@@ -32,7 +32,7 @@ public:
 	UPROPERTY(EditAnywhere)
 		class UStaticMeshComponent* mesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
 	class USoundBase* FireSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
@@ -45,7 +45,8 @@ public:
 	class UParticleSystem* MuzzleParticles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
-	class UParticleSystem* ImpactParticles;
+	class UParticleSystem* ImpactParticles;*/
 
-
+	UFUNCTION()
+	void EnemyFire();
 };
