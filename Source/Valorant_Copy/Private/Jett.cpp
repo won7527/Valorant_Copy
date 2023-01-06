@@ -428,7 +428,7 @@ void AJett::StartFire()
 		
 		}
 	}
-	//1�� ������ ���� �ٲ��� ��
+
 	if (isWeapon1Use == true) {
 
 		if (ammunition > 0) {
@@ -437,7 +437,7 @@ void AJett::StartFire()
 		}
 
 	}
-	//���� �߻�
+
 	if (isWeapon2Use == true) {
 
 		if (shotgunAmmo > 0) {

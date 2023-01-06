@@ -45,7 +45,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	class UParticleSystem* ImpactParticles;
 
-	//��� ����
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
 	class USkeletalMeshComponent* FP_Shotgun;
 
@@ -60,8 +59,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
 	float ShotgunTimeReload = 1.0f;
-	//----------------------
-	//������ ����
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
 	class USkeletalMeshComponent* FP_Snipergun;
 	
@@ -85,7 +83,7 @@ protected:
 	FTimerHandle TimerHandle_Reload;
 	FTimerHandle TimerHandle_ShotgunReload;
 	FTimerHandle TimerHandle_SniperReload;
-	//���� ������
+
 	FTimerHandle TimerHandle_ShotgunDelay;
 
 public:	
@@ -103,17 +101,17 @@ public:
 	void Weapon1Use();
 	void Weapon2Use();
 	void Weapon3Use();
-	//�������� ����
+	
 	void SniperAim();
-	//����
+
 	void ShotgunReload();
 	void SniperReload();
-	//���� �߻簣�� 
+
 	void ShotgunDelay();
 
-	//ź��
+
 	int32 ammunition = 25;
-	//���� ź��
+	
 	int32 shotgunAmmo = 8;
 	int32 maxShotgunAmmo = 8;
 	int32 sniperAmmo = 5;
@@ -202,10 +200,8 @@ public:
 
 	void FireSp();
 
-	//�Ѿ˰����� �����´�
 	int32 GetAmmo();
 
-	//���� �Ѿ� ����
 	UPROPERTY(EditAnywhere, Category = Shotgun)
 	int32 pellet=10;
 
@@ -220,37 +216,30 @@ public:
 
 private:
 	FVector ShotDirection;
-	//�ݵ���
-	FVector rebound=FVector(0,0,0);
-	//�ݵ� ���� ��� �� ����
-	FVector reboundOrigin = FVector(0, 0, 0);
-	//ī�޶� ��ġ ��
-	//FRotator CamPitch;
 
-	//ī�޶� �ݵ� Ƚ��
+	FVector rebound=FVector(0,0,0);
+
+	FVector reboundOrigin = FVector(0, 0, 0);
+
 	int32 recoilCount=0;
-	//�� �ݵ� Ƚ��
+
 	int32 reboundCount = 0;
 
 	//void Vertical(float AxisValue);
 	//void Horizontal(float AxisValue);
 
-	//����ð�
+
 	float currentTime;
 
-	//�߻翩��
 	bool isFire = false;
 	bool isShotgunDelay = false;
-	//�� ��ü����
 
 	float reZ;
 	float reX;
 	float reY;
 
-	//ī�޶� ���� ���� ����
 	FVector YDir;
 	FVector ZDir;
 
-	//�÷��̾� ���� ������
 	class UMainWidget* player_UI;
 };
