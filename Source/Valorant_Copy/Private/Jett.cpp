@@ -421,142 +421,135 @@ void AJett::StartFire()
 	//rebound = FireShot(rebound);
 	if(MaxKnife == 0)
 	{ 
-		if (ammunition > 0)
-		{
-			isFire = true;
-			GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
-		
+		if (isWeapon1Use == true) {
+
+			if (ammunition > 0) {
+				isFire = true;
+				GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
+			}
+
 		}
-	}
-
-	if (isWeapon1Use == true) {
-
-		if (ammunition > 0) {
-			isFire = true;
-			GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
-		}
-
-	}
-
-	if (isWeapon2Use == true) {
-
-		if (shotgunAmmo > 0) {
-
-			if (isShotgunDelay == false) {
-
-				//����� �����ϸ� ������ �����
-				GetWorldTimerManager().ClearTimer(TimerHandle_ShotgunReload);
-
-				for (int i = 0; i < pellet; i++) {
-					FHitResult Hit;
-					const float ShotgunRange = 20000.0f;
-					const FVector ShotgunStartTrace = FirstPersonCameraComponent->GetComponentLocation();
-
-					//������ �� �Ÿ�
-					//FVector totalSpace = FirstPersonCameraComponent->GetRightVector()*(- 0.5 * (pellet - 1) * 0.1f);
-					//FVector space = FirstPersonCameraComponent->GetRightVector() * (0.1f * i);
-
-					float yRand = FMath::RandRange(-0.05f*i, 0.05f*i);
-					float ZRand = FMath::RandRange(-0.05f*i, 0.05f*i);
-					FVector Y = FirstPersonCameraComponent->GetRightVector() * yRand;
-					FVector Z = FirstPersonCameraComponent->GetUpVector() * ZRand;
-
-					const FVector ShotgunEndTrace = ((FirstPersonCameraComponent->GetForwardVector()+Y+Z) * ShotgunRange) + ShotgunStartTrace;
-
-					FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
-
-					if (GetWorld()->LineTraceSingleByChannel(Hit, ShotgunStartTrace, ShotgunEndTrace, ECC_Visibility, QueryParams)) {
-
-						if (ShotgunImpactParticles) {
-							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
-
-							//if (GEngine)
-								//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
-						}
-			
-					}
 	
+
+		if (isWeapon2Use == true) {
+
+			if (shotgunAmmo > 0) {
+
+				if (isShotgunDelay == false) {
+
+					//����� �����ϸ� ������ �����
+					GetWorldTimerManager().ClearTimer(TimerHandle_ShotgunReload);
+
+					for (int i = 0; i < pellet; i++) {
+						FHitResult Hit;
+						const float ShotgunRange = 20000.0f;
+						const FVector ShotgunStartTrace = FirstPersonCameraComponent->GetComponentLocation();
+
+						//������ �� �Ÿ�
+						//FVector totalSpace = FirstPersonCameraComponent->GetRightVector()*(- 0.5 * (pellet - 1) * 0.1f);
+						//FVector space = FirstPersonCameraComponent->GetRightVector() * (0.1f * i);
+
+						float yRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+						float ZRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+						FVector Y = FirstPersonCameraComponent->GetRightVector() * yRand;
+						FVector Z = FirstPersonCameraComponent->GetUpVector() * ZRand;
+
+						const FVector ShotgunEndTrace = ((FirstPersonCameraComponent->GetForwardVector()+Y+Z) * ShotgunRange) + ShotgunStartTrace;
+
+						FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+
+						if (GetWorld()->LineTraceSingleByChannel(Hit, ShotgunStartTrace, ShotgunEndTrace, ECC_Visibility, QueryParams)) {
+
+							if (ShotgunImpactParticles) {
+								UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+
+								//if (GEngine)
+									//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+							}
+				
+						}
+		
+					}
+
+					if (ShotgunMuzzleParticles) {
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunMuzzleParticles, FP_Shotgun->GetSocketTransform(FName("Muzzle")));
+					}
+
+					if (ShotgunSound != nullptr) {
+						UGameplayStatics::PlaySoundAtLocation(this, ShotgunSound, GetActorLocation());
+					}
+					//ź�� �Һ��Ѵ�
+					shotgunAmmo--;
+
+					//���� ź�Ҹ� ���Ӹ�忡 �˸���
+					AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+					AValorant* myGM = Cast<AValorant>(gm);
+					myGM->ShotgunMinusAmmo();
+					//�ݵ�
+					APawn::AddControllerPitchInput(-1.2f);
+					APawn::AddControllerYawInput(-0.5f);
+
+					isShotgunDelay = true;
+					GetWorldTimerManager().SetTimer(TimerHandle_ShotgunDelay, this, &AJett::ShotgunDelay, 0.7f, false);
+
+				
 				}
 
-				if (ShotgunMuzzleParticles) {
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunMuzzleParticles, FP_Shotgun->GetSocketTransform(FName("Muzzle")));
+			}
+
+		}
+		if (isWeapon3Use == true) {
+
+			if (sniperAmmo > 0) {
+
+				FHitResult Hit;
+
+				const float SniperRange = 20000.0f;
+				const FVector SniperStartTrace = FirstPersonCameraComponent->GetComponentLocation();
+
+				//��������
+				const FVector SniperEndTrace = FirstPersonCameraComponent->GetForwardVector()*SniperRange+SniperStartTrace;
+
+				FCollisionQueryParams SniperQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+
+				if (GetWorld()->LineTraceSingleByChannel(Hit, SniperStartTrace, SniperEndTrace, ECC_Visibility, SniperQueryParams)) {
+
+					if (SniperImpactParticles) {
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+
+						//if (GEngine)
+							//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+					}
+
 				}
 
-				if (ShotgunSound != nullptr) {
-					UGameplayStatics::PlaySoundAtLocation(this, ShotgunSound, GetActorLocation());
+				if (SniperMuzzleParticles) {
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperMuzzleParticles, FP_Snipergun->GetSocketTransform(FName("Muzzle")));
 				}
-				//ź�� �Һ��Ѵ�
-				shotgunAmmo--;
 
-				//���� ź�Ҹ� ���Ӹ�忡 �˸���
+				if (SniperSound != nullptr) {
+					UGameplayStatics::PlaySoundAtLocation(this, SniperSound, GetActorLocation());
+				}
+
+				sniperAmmo--;
 				AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 				AValorant* myGM = Cast<AValorant>(gm);
-				myGM->ShotgunMinusAmmo();
-				//�ݵ�
-				APawn::AddControllerPitchInput(-1.2f);
-				APawn::AddControllerYawInput(-0.5f);
+				myGM->SniperMinusAmmo();
 
-				isShotgunDelay = true;
-				GetWorldTimerManager().SetTimer(TimerHandle_ShotgunDelay, this, &AJett::ShotgunDelay, 0.7f, false);
-
-			
-			}
-
-		}
-
-	}
-	if (isWeapon3Use == true) {
-
-		if (sniperAmmo > 0) {
-
-			FHitResult Hit;
-
-			const float SniperRange = 20000.0f;
-			const FVector SniperStartTrace = FirstPersonCameraComponent->GetComponentLocation();
-
-			//��������
-			const FVector SniperEndTrace = FirstPersonCameraComponent->GetForwardVector()*SniperRange+SniperStartTrace;
-
-			FCollisionQueryParams SniperQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
-
-			if (GetWorld()->LineTraceSingleByChannel(Hit, SniperStartTrace, SniperEndTrace, ECC_Visibility, SniperQueryParams)) {
-
-				if (SniperImpactParticles) {
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
-
-					//if (GEngine)
-						//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+				APawn::AddControllerPitchInput(-4.0f);
+				//APawn::AddControllerYawInput(-0.0f);
+				class AEnemy* enemy = Cast<AEnemy>(Hit.GetActor());
+				if (enemy) {
+					if (GEngine)
+						GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("E hit")));
 				}
 
 			}
 
-			if (SniperMuzzleParticles) {
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperMuzzleParticles, FP_Snipergun->GetSocketTransform(FName("Muzzle")));
-			}
-
-			if (SniperSound != nullptr) {
-				UGameplayStatics::PlaySoundAtLocation(this, SniperSound, GetActorLocation());
-			}
-
-			sniperAmmo--;
-			AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-			AValorant* myGM = Cast<AValorant>(gm);
-			myGM->SniperMinusAmmo();
-
-			APawn::AddControllerPitchInput(-4.0f);
-			//APawn::AddControllerYawInput(-0.0f);
-			class AEnemy* enemy = Cast<AEnemy>(Hit.GetActor());
-			if (enemy) {
-				if (GEngine)
-					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("E hit")));
-			}
 
 		}
-
-
-	}
 	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
-	
+	}
 
 }
 
