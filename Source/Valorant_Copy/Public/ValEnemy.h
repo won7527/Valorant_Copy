@@ -30,6 +30,13 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = FSMComponent)
 	class UFSM* fsm;
+	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite);
+	class UStaticMeshComponent* HPRed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite);
+	class UStaticMeshComponent* HPBlack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	class USkeletalMeshComponent* FP_Gun;
@@ -49,8 +56,12 @@ public:
 	class AJett* Jett;
 
 	int32 ammunition = 25;
+	
+	float MaxHp;
+	
+	float HP;
 
-	int32 HP;
+	float HPRate;
 	
 	FTimerHandle cooltime;
 

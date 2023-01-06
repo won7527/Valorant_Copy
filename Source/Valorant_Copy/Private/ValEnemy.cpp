@@ -8,6 +8,7 @@
 #include "Jett.h"
 #include "EngineUtils.h"
 #include "Knife.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values
 AValEnemy::AValEnemy()
@@ -22,6 +23,13 @@ AValEnemy::AValEnemy()
 	FP_Gun->SetupAttachment(RootComponent);
 
 	fsm = CreateDefaultSubobject<UFSM>(TEXT("FSM"));
+
+	HPRed = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RED"));
+	HPBlack = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Black"));
+	
+	HPRed->SetupAttachment(RootComponent);
+	HPBlack->SetupAttachment(RootComponent);
+	
 }
 
 // Called when the game starts or when spawned
@@ -29,8 +37,9 @@ void AValEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-
-	HP = 5;
+	MaxHp = 5;
+	HP = MaxHp;
+	HPRate = 1/MaxHp;
 }
 
 // Called every frame
@@ -104,6 +113,11 @@ void AValEnemy::FireDelayEnd()
 void AValEnemy::Attacked()
 {
 	HP -= 1;
+	HPRed->SetRelativeScale3D(FVector(0.1, HPRate * HP, 0.1));
+	HPBlack->SetRelativeScale3D(FVector(0.1, 1 - HPRate * HP, 0.1));
+	HPRed->SetRelativeLocation(FVector(0, 50 * HPRate * (MaxHp - HP), 120));
+	HPBlack->SetRelativeLocation(FVector(0, -50 * HPRate * (HP), 120));
+	
 	UE_LOG(LogTemp, Warning, TEXT("HIT"));
 	if (HP == 0)
 	{
