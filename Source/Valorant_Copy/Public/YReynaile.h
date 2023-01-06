@@ -43,9 +43,6 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
 	USphereComponent* CollisionComp;
 
-	UPROPERTY(EditAnywhere, Category = "Collision")
-	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
-
 	// Projectile movement component.
 	UPROPERTY(VisibleAnywhere, Category = Movement)
 	UProjectileMovementComponent* yReynaileMoveComp;
