@@ -73,7 +73,12 @@ public:
 
 	void FireDelayEnd();
 
-	void Attacked();
+	void Attacked(int32 deal);
+
+	float cur;
+	bool ismove=false;
+	bool isturn = false;
+
 
 
 

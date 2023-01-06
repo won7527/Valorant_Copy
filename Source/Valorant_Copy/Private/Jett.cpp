@@ -468,6 +468,11 @@ void AJett::StartFire()
 							}
 				
 						}
+						AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
+						if (enemy)
+						{
+							enemy->Attacked(1);
+						}
 		
 					}
 
@@ -491,6 +496,7 @@ void AJett::StartFire()
 
 					isShotgunDelay = true;
 					GetWorldTimerManager().SetTimer(TimerHandle_ShotgunDelay, this, &AJett::ShotgunDelay, 0.7f, false);
+
 
 				
 				}
@@ -538,10 +544,15 @@ void AJett::StartFire()
 
 				APawn::AddControllerPitchInput(-4.0f);
 				//APawn::AddControllerYawInput(-0.0f);
-				class AEnemy* enemy = Cast<AEnemy>(Hit.GetActor());
+				/*class AEnemy* enemy = Cast<AEnemy>(Hit.GetActor());
 				if (enemy) {
 					if (GEngine)
 						GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("E hit")));
+				}*/
+				AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
+				if (enemy)
+				{
+					enemy->Attacked(5);
 				}
 
 			}
@@ -682,7 +693,7 @@ void AJett::FireShot()
 	AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
 	if (enemy)
 	{
-		enemy->Attacked();
+		enemy->Attacked(1);
 	}
 
 

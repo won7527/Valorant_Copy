@@ -78,10 +78,9 @@ void UFSM::IdleState()
 
 void UFSM::MoveState()
 {
-
+	me->ismove = true;
 	//destination = target->GetActorLocation();
 	//dir = destination - me->GetActorLocation();
-
 	if (dir.Size() < followRange)
 	{
 		me->AddMovementInput(dir.GetSafeNormal());
@@ -96,7 +95,7 @@ void UFSM::MoveState()
 
 void UFSM::AttackState()
 {
-
+	me->ismove = false;
 	me->SetActorRotation((target->GetActorLocation() - me->GetActorLocation()).Rotation());
 	if (dir.Size() > attackRange)
 	{

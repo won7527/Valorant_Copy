@@ -115,6 +115,9 @@ public:
 	int32 shotgunAmmo = 8;
 	int32 maxShotgunAmmo = 8;
 	int32 sniperAmmo = 5;
+	//playerHP
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = PlayerSetting)
+	int32 playerHP = 100;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = PlayerSettings)
 	class UBoxComponent* boxComp;
