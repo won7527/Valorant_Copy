@@ -65,13 +65,6 @@ void AJett::BeginPlay()
 
 	Weapon1Use();
 
-	const FVector LocationS = GetActorLocation();
-	const FRotator RotationS = GetActorRotation();
-	GetWorld()->SpawnActor<AActor>(SmokeGrenade, LocationS, RotationS);
-	for (TActorIterator<ASmokeGrenade>it(GetWorld()); it; ++it)
-	{
-		smoke = *it;
-	}
 
 	FVector Location = GetActorLocation() + FVector(0, 0, -200);
 	DeactivatedLocation = Location;
@@ -434,6 +427,7 @@ void AJett::StartFire()
 			GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
 		
 		}
+	}
 	//1�� ������ ���� �ٲ��� ��
 	if (isWeapon1Use == true) {
 

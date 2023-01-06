@@ -78,7 +78,10 @@ void AValorant::SniperReloadAmmo()
 void AValorant::ChangeWeapon()
 {
 	if (player->isWeapon1Use == true) {
+		if(player_UI != nullptr)
+		{ 
 		player_UI->UIammo->SetText(FText::AsNumber(ammo));
+		}	
 	}
 
 	if (player->isWeapon2Use == true) {

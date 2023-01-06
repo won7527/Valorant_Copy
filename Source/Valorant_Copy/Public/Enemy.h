@@ -47,5 +47,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
 	class UParticleSystem* ImpactParticles;
 
+	void EnemyFire();
 
 };
