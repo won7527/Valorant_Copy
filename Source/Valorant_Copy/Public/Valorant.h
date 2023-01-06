@@ -16,19 +16,65 @@ class VALORANT_COPY_API AValorant : public AGameModeBase
 	
 public:
 	
-	//게임모드에서 사용할 블루프린트 위젯을 설정한다
-	UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
-		TSubclassOf<class UPlayerUI> playerUI;
-
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE int32 GetAmmo() { return ammo;}
 
-	//UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
-		//int32 ammo=25;
+	UPROPERTY(EditAnywhere, Category=MyDefaultSetting)
+	TSubclassOf<class UPlayerUI> playerWidget;
 
-	class AJett* jet;
+	UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
+	TSubclassOf<class UCharacterSelectWidget> SelectWidgetBP;
+
+	UPROPERTY(EditAnywhere, Category = MyDefaultSetting)
+	TSubclassOf<class USniperAimWidget> SniperAimWidgetBP;
+
+
+
+	void MinusAmmo(int32 count);
+
+	void ReloadAmmo();
+
+	//샷건
+	void ShotgunMinusAmmo();
+
+	void ShotgunReloadAmmo();
+
+	//스나
+	void SniperMinusAmmo();
+
+	void SniperReloadAmmo();
+
+	void ChangeWeapon();
+
+	void SniperAim();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void Select1();
+
+	//플레이어 ui변수
+	class UPlayerUI* player_UI;
+	class AJett* player;
+	//선택창 위젯 변수
+	class UCharacterSelectWidget* SelectWidget;
+	//스나 조준 위젯 변수
+	class USniperAimWidget* sniperWidget;
+
+	UPROPERTY(EditAnywhere)
+	bool isScope = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HP)
+	int32 playerHP = 100;
+
+	UFUNCTION()
+	void Damaged(int32 deal);
+
 
 private:
+	int32 ammo = 25;
 
-	int32 ammo;
+	int32 shotgunAmmo = 8;
+	int32 sniperAmmo = 5;
+
 };

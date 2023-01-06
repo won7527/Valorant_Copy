@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 #include "PlayerUI.generated.h"
 
 /**
@@ -16,6 +17,13 @@ class VALORANT_COPY_API UPlayerUI : public UUserWidget
 
 public:
 
-	void PrintAmmo();
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UIammo; 
+
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UIplayerHP;
+
+	//void PrintAmmo();
+
 
 };

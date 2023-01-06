@@ -45,7 +45,37 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	class UParticleSystem* ImpactParticles;
 
+	//ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	class USkeletalMeshComponent* FP_Shotgun;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	class USoundBase* ShotgunSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	class UParticleSystem* ShotgunMuzzleParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	class UParticleSystem* ShotgunImpactParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
+	float ShotgunTimeReload = 1.0f;
+	//----------------------
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class USkeletalMeshComponent* FP_Snipergun;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class USoundBase* SniperSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class UParticleSystem* SniperMuzzleParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class UParticleSystem* SniperImpactParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	float SniperTimeReload = 5;
 
 protected:
 	// Called when the game starts or when spawned
@@ -53,6 +83,10 @@ protected:
 
 	FTimerHandle TimerHandle_HandleRefire;
 	FTimerHandle TimerHandle_Reload;
+	FTimerHandle TimerHandle_ShotgunReload;
+	FTimerHandle TimerHandle_SniperReload;
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	FTimerHandle TimerHandle_ShotgunDelay;
 
 public:	
 	// Called every frame
@@ -66,9 +100,23 @@ public:
 	void FireShot();
 	void ReloadInput();
 	void Reload();
+	void Weapon1Use();
+	void Weapon2Use();
+	void Weapon3Use();
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	void SniperAim();
+	//ï¿½ï¿½ï¿½ï¿½
+	void ShotgunReload();
+	void SniperReload();
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ç°£ï¿½ï¿½ 
+	void ShotgunDelay();
 
-	//Åº¾à
+	//Åºï¿½ï¿½
 	int32 ammunition = 25;
+	//ï¿½ï¿½ï¿½ï¿½ Åºï¿½ï¿½
+	int32 shotgunAmmo = 8;
+	int32 maxShotgunAmmo = 8;
+	int32 sniperAmmo = 5;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = PlayerSettings)
 	class UBoxComponent* boxComp;
@@ -154,39 +202,55 @@ public:
 
 	void FireSp();
 
-	//ÃÑ¾Ë°¹¼ö¸¦ °¡Á®¿Â´Ù
+	//ï¿½Ñ¾Ë°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Â´ï¿½
 	int32 GetAmmo();
+
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ¾ï¿½ ï¿½ï¿½ï¿½ï¿½
+	UPROPERTY(EditAnywhere, Category = Shotgun)
+	int32 pellet=10;
+
+	UPROPERTY(EditAnywhere, Category = Shotgun)
+	bool isWeapon1Use = false;
+	UPROPERTY(EditAnywhere, Category = Shotgun)
+	bool isWeapon2Use = false;
+	UPROPERTY(EditAnywhere, Category = Shotgun)
+	bool isWeapon3Use = false;
 	
 
 
 private:
 	FVector ShotDirection;
-	//¹Ýµ¿°ª
+	//ï¿½Ýµï¿½ï¿½ï¿½
 	FVector rebound=FVector(0,0,0);
-	//¹Ýµ¿ ¼öÁ÷ »ó½Â °ª ÀúÀå
+	//ï¿½Ýµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	FVector reboundOrigin = FVector(0, 0, 0);
-	//Ä«¸Þ¶ó ÇÇÄ¡ °ª
+	//Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½
 	//FRotator CamPitch;
 
-	//Ä«¸Þ¶ó ¹Ýµ¿ È½¼ö
+	//Ä«ï¿½Þ¶ï¿½ ï¿½Ýµï¿½ È½ï¿½ï¿½
 	int32 recoilCount=0;
-	//ÃÑ ¹Ýµ¿ È½¼ö
+	//ï¿½ï¿½ ï¿½Ýµï¿½ È½ï¿½ï¿½
 	int32 reboundCount = 0;
 
 	//void Vertical(float AxisValue);
 	//void Horizontal(float AxisValue);
 
-	//ÇöÀç½Ã°£
+	//ï¿½ï¿½ï¿½ï¿½Ã°ï¿½
 	float currentTime;
 
-	//¹ß»ç¿©ºÎ
+	//ï¿½ß»ç¿©ï¿½ï¿½
 	bool isFire = false;
+	bool isShotgunDelay = false;
+	//ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½
 
 	float reZ;
 	float reX;
 	float reY;
 
-	//Ä«¸Þ¶ó ¹æÇâ ¹éÅÍ º¯¼ö
+	//Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	FVector YDir;
 	FVector ZDir;
+
+	//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	class UMainWidget* player_UI;
 };

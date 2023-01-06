@@ -16,6 +16,8 @@
 #include "Math/UnrealMathUtility.h"
 #include "Math/Vector.h"
 #include "ValEnemy.h"
+#include "Valorant.h"
+#include "Enemy.h"
 
 // Sets default values
 AJett::AJett()
@@ -39,6 +41,20 @@ AJett::AJett()
 	FP_Gun->CastShadow = false;
 	FP_Gun->SetupAttachment(RootComponent);
 
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	FP_Shotgun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Shotgun"));
+	FP_Shotgun->SetOnlyOwnerSee(true);
+	FP_Shotgun->bCastDynamicShadow = false;
+	FP_Shotgun->CastShadow = false;
+	FP_Shotgun->SetupAttachment(RootComponent);
+
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	FP_Snipergun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Sniper"));
+	FP_Snipergun->SetOnlyOwnerSee(true);
+	FP_Snipergun->bCastDynamicShadow = false;
+	FP_Snipergun->CastShadow = false;
+	FP_Snipergun->SetupAttachment(RootComponent);
+
 	
 }
 
@@ -47,6 +63,15 @@ void AJett::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Weapon1Use();
+
+	const FVector LocationS = GetActorLocation();
+	const FRotator RotationS = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(SmokeGrenade, LocationS, RotationS);
+	for (TActorIterator<ASmokeGrenade>it(GetWorld()); it; ++it)
+	{
+		smoke = *it;
+	}
 
 	FVector Location = GetActorLocation() + FVector(0, 0, -200);
 	DeactivatedLocation = Location;
@@ -211,6 +236,15 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AJett::StartFire);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AJett::StopFire);
 	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AJett::ReloadInput);
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼
+	PlayerInputComponent->BindAction(TEXT("Weapon1"), IE_Pressed, this, &AJett::Weapon1Use);
+	PlayerInputComponent->BindAction(TEXT("Weapon2"), IE_Pressed, this, &AJett::Weapon2Use);
+	PlayerInputComponent->BindAction(TEXT("Weapon3"), IE_Pressed, this, &AJett::Weapon3Use);
+	//ï¿½ï¿½ï¿½ï¿½
+	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Pressed, this, &AJett::SniperAim);
+	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Released, this, &AJett::SniperAim);
+
+
 	
 }
 
@@ -400,7 +434,135 @@ void AJett::StartFire()
 			GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
 		
 		}
+	//1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ï¿½ ï¿½ï¿½
+	if (isWeapon1Use == true) {
+
+		if (ammunition > 0) {
+			isFire = true;
+			GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
+		}
+
 	}
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
+	if (isWeapon2Use == true) {
+
+		if (shotgunAmmo > 0) {
+
+			if (isShotgunDelay == false) {
+
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
+				GetWorldTimerManager().ClearTimer(TimerHandle_ShotgunReload);
+
+				for (int i = 0; i < pellet; i++) {
+					FHitResult Hit;
+					const float ShotgunRange = 20000.0f;
+					const FVector ShotgunStartTrace = FirstPersonCameraComponent->GetComponentLocation();
+
+					//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Å¸ï¿½
+					//FVector totalSpace = FirstPersonCameraComponent->GetRightVector()*(- 0.5 * (pellet - 1) * 0.1f);
+					//FVector space = FirstPersonCameraComponent->GetRightVector() * (0.1f * i);
+
+					float yRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+					float ZRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+					FVector Y = FirstPersonCameraComponent->GetRightVector() * yRand;
+					FVector Z = FirstPersonCameraComponent->GetUpVector() * ZRand;
+
+					const FVector ShotgunEndTrace = ((FirstPersonCameraComponent->GetForwardVector()+Y+Z) * ShotgunRange) + ShotgunStartTrace;
+
+					FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+
+					if (GetWorld()->LineTraceSingleByChannel(Hit, ShotgunStartTrace, ShotgunEndTrace, ECC_Visibility, QueryParams)) {
+
+						if (ShotgunImpactParticles) {
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+
+							//if (GEngine)
+								//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+						}
+			
+					}
+	
+				}
+
+				if (ShotgunMuzzleParticles) {
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ShotgunMuzzleParticles, FP_Shotgun->GetSocketTransform(FName("Muzzle")));
+				}
+
+				if (ShotgunSound != nullptr) {
+					UGameplayStatics::PlaySoundAtLocation(this, ShotgunSound, GetActorLocation());
+				}
+				//Åºï¿½ï¿½ ï¿½Òºï¿½ï¿½Ñ´ï¿½
+				shotgunAmmo--;
+
+				//ï¿½ï¿½ï¿½ï¿½ Åºï¿½Ò¸ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½Ë¸ï¿½ï¿½ï¿½
+				AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+				AValorant* myGM = Cast<AValorant>(gm);
+				myGM->ShotgunMinusAmmo();
+				//ï¿½Ýµï¿½
+				APawn::AddControllerPitchInput(-1.2f);
+				APawn::AddControllerYawInput(-0.5f);
+
+				isShotgunDelay = true;
+				GetWorldTimerManager().SetTimer(TimerHandle_ShotgunDelay, this, &AJett::ShotgunDelay, 0.7f, false);
+
+			
+			}
+
+		}
+
+	}
+	if (isWeapon3Use == true) {
+
+		if (sniperAmmo > 0) {
+
+			FHitResult Hit;
+
+			const float SniperRange = 20000.0f;
+			const FVector SniperStartTrace = FirstPersonCameraComponent->GetComponentLocation();
+
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			const FVector SniperEndTrace = FirstPersonCameraComponent->GetForwardVector()*SniperRange+SniperStartTrace;
+
+			FCollisionQueryParams SniperQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+
+			if (GetWorld()->LineTraceSingleByChannel(Hit, SniperStartTrace, SniperEndTrace, ECC_Visibility, SniperQueryParams)) {
+
+				if (SniperImpactParticles) {
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+
+					//if (GEngine)
+						//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+				}
+
+			}
+
+			if (SniperMuzzleParticles) {
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperMuzzleParticles, FP_Snipergun->GetSocketTransform(FName("Muzzle")));
+			}
+
+			if (SniperSound != nullptr) {
+				UGameplayStatics::PlaySoundAtLocation(this, SniperSound, GetActorLocation());
+			}
+
+			sniperAmmo--;
+			AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+			AValorant* myGM = Cast<AValorant>(gm);
+			myGM->SniperMinusAmmo();
+
+			APawn::AddControllerPitchInput(-4.0f);
+			//APawn::AddControllerYawInput(-0.0f);
+			class AEnemy* enemy = Cast<AEnemy>(Hit.GetActor());
+			if (enemy) {
+				if (GEngine)
+					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("E hit")));
+			}
+
+		}
+
+
+	}
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+	
 
 }
 
@@ -419,14 +581,14 @@ void AJett::FireShot()
 {
 	FHitResult Hit;
 
-	//ÃÑÀÇ ÅºÆÛÁüÀº EndTrace·Î Á¶Á¤
-	//ÀÏÁ¤ ÆÐÅÏÀº Ä«¸Þ¶ó ¿òÁ÷ÀÓÀ¸·Î Á¶Á¤
+	//ï¿½ï¿½ï¿½ï¿½ Åºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ EndTraceï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-	//Ä«¸Þ¶ó¸¦ À§·Î ¿Ã¸®´Â ¹Ýµ¿
+	//Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã¸ï¿½ï¿½ï¿½ ï¿½Ýµï¿½
 	//CamPitch = FirstPersonCameraComponent->GetRelativeRotation() + FRotator(10.0f, 0, 0);
 	//FirstPersonCameraComponent->SetRelativeRotation(CamPitch);
 
-	//ÃÑÀÌ ³ª°¡´Â À§Ä¡¸¦ ¿Ã¸®´Â ¹Ýµ¿
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ã¸ï¿½ï¿½ï¿½ ï¿½Ýµï¿½
 
 	/*if (reboundCount <= 7) {
 		reZ += FMath::RandRange(0.01f, 0.03f);
@@ -437,7 +599,7 @@ void AJett::FireShot()
 		reboundOrigin = rebound;
 	}
 
-	//7¹ß ±îÁö´Â ÆÐÅÏÀÌ ÀÏÁ¤ÇÏ´Ù
+	//7ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½
 	switch (reboundCount) {
 	case 0:
 		YDir = FirstPersonCameraComponent->GetRightVector() * 0;
@@ -496,7 +658,7 @@ void AJett::FireShot()
 
 		if (ImpactParticles) {
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
-			//µ¥¹ÌÁö ÀÌº¥Æ®
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ®
 			ShotDirection = FirstPersonCameraComponent->GetForwardVector();
 			ShotDirection.Normalize();
 
@@ -537,8 +699,15 @@ void AJett::FireShot()
 	}
 
 
-	//Åº¾àÀÌ 0 ÀÌµÇ¸é »ç°ÝÁ¾·á
+	//Åºï¿½ï¿½ï¿½ï¿½ 0 ï¿½ÌµÇ¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	ammunition--;
+
+	//Åºï¿½Ò¸ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½Ë¸ï¿½ï¿½ï¿½
+	AGameModeBase* gm =  UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->MinusAmmo(1);
+	UE_LOG(LogTemp, Warning, TEXT("%d"), myGM->GetAmmo());
+
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT(" %d, isFrie? = %d"), ammunition, isFire));
 
@@ -551,17 +720,118 @@ void AJett::FireShot()
 }
 
 void AJett::ReloadInput() {
-	if (isFire == false) {
-		GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AJett::Reload, TimeReload, false);
+	if (isWeapon1Use == true) {
+		if (isFire == false) {
+			GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AJett::Reload, TimeReload, false);
+		}
+	}
+
+	if (isWeapon2Use == true) {
+		
+		GetWorldTimerManager().SetTimer(TimerHandle_ShotgunReload, this, &AJett::ShotgunReload, ShotgunTimeReload, true);
+		
+	}
+
+	if (isWeapon3Use == true) {
+		GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AJett::SniperReload, SniperTimeReload, false);
 	}
 }
 
 void AJett::Reload()
 {
 	ammunition = 25;
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ñ´ï¿½
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->ReloadAmmo();
+}
+
+void AJett::ShotgunReload()
+{
+	if (shotgunAmmo < maxShotgunAmmo) {
+		shotgunAmmo += 1;
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¸ï¿½å¿¡ ï¿½Ë¸ï¿½ï¿½ï¿½
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		AValorant* myGM = Cast<AValorant>(gm);
+		myGM->ShotgunReloadAmmo();
+		/*if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("reload")));*/
+
+	}
+	else if (shotgunAmmo >= maxShotgunAmmo) {
+		GetWorldTimerManager().ClearTimer(TimerHandle_ShotgunReload);
+	}
+}
+
+void AJett::SniperReload()
+{
+	sniperAmmo = 5;
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->SniperReloadAmmo();
+}
+
+void AJett::ShotgunDelay()
+{
+	isShotgunDelay = false;
 }
 
 int32 AJett::GetAmmo()
 {
 	return ammunition;
 }
+
+void AJett::Weapon1Use()
+{
+	isWeapon1Use = true;
+	isWeapon2Use = false;
+	isWeapon3Use = false;
+	FP_Shotgun->SetVisibility(false);
+	FP_Gun->SetVisibility(true);
+	FP_Snipergun->SetVisibility(false);
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->ChangeWeapon();
+}
+
+void AJett::Weapon2Use()
+{
+	isWeapon1Use = false;
+	isWeapon2Use = true;
+	isWeapon3Use = false;
+	FP_Shotgun->SetVisibility(true);
+	FP_Gun->SetVisibility(false);
+	FP_Snipergun->SetVisibility(false);
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->ChangeWeapon();
+}
+
+void AJett::Weapon3Use()
+{
+	isWeapon1Use = false;
+	isWeapon2Use = false;
+	isWeapon3Use = true;
+	FP_Shotgun->SetVisibility(false);
+	FP_Gun->SetVisibility(false);
+	FP_Snipergun->SetVisibility(true);
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	myGM->ChangeWeapon();
+}
+
+void AJett::SniperAim()
+{
+	if (isWeapon3Use == true) {
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		AValorant* myGM = Cast<AValorant>(gm);
+		myGM->SniperAim();
+		if (myGM->isScope == true) {
+			FirstPersonCameraComponent->SetFieldOfView(20.0f);
+		}
+		if (myGM->isScope != true) {
+			FirstPersonCameraComponent->SetFieldOfView(90.0f);
+		}
+	}
+}
+
