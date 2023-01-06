@@ -10,7 +10,7 @@ void AValorant::BeginPlay()
 	//실제로 설정한 위젯블루프린트를 인스턴스화 시킨다   위젯은 월드소유
 	UPlayerUI* player_UI = CreateWidget<UPlayerUI>(GetWorld(), playerUI);
 
-	ammo = jet->GetAmmo();
+	//ammo = jet->GetAmmo();
 
 	//인스턴스화 시킨 위젯블루프린트를 뷰포트에 그린다
 	if (player_UI != nullptr) {

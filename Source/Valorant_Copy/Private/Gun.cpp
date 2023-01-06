@@ -106,8 +106,7 @@ void AGun::StartFire()
 	if (ammunition > 0) {
 		isFire = true;
 		GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AGun::FireShot, TimeBetweenShots, true);
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("no ammo")));
+
 	}
 
 }

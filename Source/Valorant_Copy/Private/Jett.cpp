@@ -15,6 +15,7 @@
 #include "Engine/DamageEvents.h"
 #include "Math/UnrealMathUtility.h"
 #include "Math/Vector.h"
+#include "ValEnemy.h"
 
 // Sets default values
 AJett::AJett()
@@ -46,13 +47,6 @@ void AJett::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const FVector LocationS = GetActorLocation();
-	const FRotator RotationS = GetActorRotation();
-	GetWorld()->SpawnActor<AActor>(SmokeGrenade, LocationS, RotationS);
-	for (TActorIterator<ASmokeGrenade>it(GetWorld()); it; ++it)
-	{
-		smoke = *it;
-	}
 
 	FVector Location = GetActorLocation() + FVector(0, 0, -200);
 	DeactivatedLocation = Location;
@@ -103,16 +97,26 @@ void AJett::Tick(float DeltaTime)
 
 	DashDir = GetActorForwardVector();
 
+	APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+	FRotator camRotation = camManager->GetCameraRotation();
+
 	if (MaxKnife == 5)
 	{
 
 		//APlayerCameraManager* camManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
 		//FVector camLocation = camManager->GetCameraLocation();
+
 		knife0->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200 + GetActorRightVector() * -200);
 		knife1->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200 + GetActorRightVector() * 200);
 		knife2->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200 + GetActorRightVector() * -100);
 		knife3->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200 + GetActorRightVector() * 100);
 		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector()* 200);
+
+		knife0->SetActorRotation(camRotation);
+		knife1->SetActorRotation(camRotation);
+		knife2->SetActorRotation(camRotation);
+		knife3->SetActorRotation(camRotation);
+		knife4->SetActorRotation(camRotation);
 
 	}															  
 	else if (MaxKnife == 4)
@@ -121,21 +125,35 @@ void AJett::Tick(float DeltaTime)
 		knife2->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * -100);
 		knife3->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 100);
 		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200);
+
+		knife1->SetActorRotation(camRotation);
+		knife2->SetActorRotation(camRotation);
+		knife3->SetActorRotation(camRotation);
+		knife4->SetActorRotation(camRotation);
 	}
 	else if (MaxKnife == 3)
 	{
 		knife2->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * -100);
 		knife3->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 100);
 		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200);
+
+		knife2->SetActorRotation(camRotation);
+		knife3->SetActorRotation(camRotation);
+		knife4->SetActorRotation(camRotation);
 	}
 	else if (MaxKnife == 2)
 	{
 		knife3->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 100);
 		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200);
+
+		knife3->SetActorRotation(camRotation);
+		knife4->SetActorRotation(camRotation);
 	}
 	else if (MaxKnife == 1)
 	{
 		knife4->SetActorLocation(GetActorLocation() + GetActorForwardVector() * 200);
+
+		knife4->SetActorRotation(camRotation);
 	}
 
 	if (isFire) {
@@ -269,7 +287,13 @@ void AJett::Dash()
 
 void AJett::Smoke()
 {
-
+	const FVector LocationS = GetActorLocation();
+	const FRotator RotationS = GetActorRotation();
+	GetWorld()->SpawnActor<AActor>(SmokeGrenade, LocationS, RotationS);
+	for (TActorIterator<ASmokeGrenade>it(GetWorld()); it; ++it)
+	{
+		smoke = *it;
+	}
 	smoke->KeepPressed();
 
 }
@@ -368,11 +392,14 @@ void AJett::StartFire()
 {
 	//rebound = FVector(0,0,0);
 	//rebound = FireShot(rebound);
-	if (ammunition > 0) {
-		isFire = true;
-		GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("no ammo")));
+	if(MaxKnife == 0)
+	{ 
+		if (ammunition > 0)
+		{
+			isFire = true;
+			GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
+		
+		}
 	}
 
 }
@@ -483,8 +510,9 @@ void AJett::FireShot()
 			//	HitActor->TakeDamage(Damage, DamageEvent);
 			// }
 		}
-
+		
 	}
+
 
 	if (MuzzleParticles) {
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleParticles, FP_Gun->GetSocketTransform(FName("Muzzle")));
@@ -500,6 +528,12 @@ void AJett::FireShot()
 		if (Animinstance != nullptr) {
 			Animinstance->Montage_Play(FireAnimation, 1.f);
 		}
+	}
+
+	AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
+	if (enemy)
+	{
+		enemy->Attacked();
 	}
 
 
