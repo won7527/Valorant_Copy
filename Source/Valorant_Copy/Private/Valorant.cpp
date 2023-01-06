@@ -110,5 +110,6 @@ void AValorant::SniperAim()
 void AValorant::Damaged(int32 deal)
 {
 	playerHP -= deal;
+	player_UI->UIplayerHP->SetText(FText::AsNumber(playerHP));
 }
 

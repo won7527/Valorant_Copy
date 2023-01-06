@@ -8,6 +8,8 @@
 #include "Jett.h"
 #include "EngineUtils.h"
 #include "Knife.h"
+#include "Jett.h"
+#include "Valorant.h"
 
 // Sets default values
 AValEnemy::AValEnemy()
@@ -38,6 +40,37 @@ void AValEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	
+	if (ismove == true) {
+
+		cur += DeltaTime;
+		if (isturn == false) {
+			if (cur < 1.5) {
+				AddMovementInput(GetActorForwardVector());
+
+			}
+			else {
+				isturn = true;
+				cur = 0;
+				SetActorRotation(GetActorRotation() - FRotator(0, -180, 0));
+			}
+		}
+		if (isturn == true)
+		{
+			if (cur < 1.5)
+			{
+				AddMovementInput(GetActorForwardVector());
+			}
+			else {
+				isturn = false;
+				cur = 0;
+				SetActorRotation(GetActorRotation() - FRotator(0, -180, 0));
+			}
+		}
+
+		
+
+	}
 }
 
 // Called to bind functionality to input
@@ -56,7 +89,7 @@ void AValEnemy::Fire()
 		Jett = *jett;
 	}
 
-	FVector EndTrace = Jett->GetActorLocation();
+	FVector EndTrace = GetActorForwardVector()+20000.0f+StartTrace;
 
 	FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
 
@@ -84,6 +117,15 @@ void AValEnemy::Fire()
 	{
 		
 	}
+
+	AJett* jett = Cast<AJett>(Hit.GetActor());
+	if (jett) {
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		AValorant* myGM = Cast<AValorant>(gm);
+		myGM->Damaged(5);
+		UE_LOG(LogTemp, Warning, TEXT("playerHit"));
+	}
+
 	isDelay = true;
 }
 
@@ -101,9 +143,9 @@ void AValEnemy::FireDelayEnd()
 	isDelay = false;
 }
 
-void AValEnemy::Attacked()
+void AValEnemy::Attacked(int32 deal)
 {
-	HP -= 1;
+	HP -= deal;
 	UE_LOG(LogTemp, Warning, TEXT("HIT"));
 	if (HP == 0)
 	{
