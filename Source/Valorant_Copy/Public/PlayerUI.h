@@ -20,6 +20,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
 	class UTextBlock* UIammo; 
 
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UIplayerHP;
+
 	//void PrintAmmo();
 
 

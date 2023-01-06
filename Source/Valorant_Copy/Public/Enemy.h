@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Enemy.generated.h"
 
+
 UCLASS()
 class VALORANT_COPY_API AEnemy : public AActor
 {
@@ -14,13 +15,6 @@ class VALORANT_COPY_API AEnemy : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AEnemy();
-
-	UPROPERTY(EditAnywhere)
-	class UBoxComponent* boxComp;
-
-	UPROPERTY(EditAnywhere)
-	class UStaticMeshComponent* mesh;
-
 
 	
 
@@ -32,7 +26,26 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere)
+		class UBoxComponent* boxComp;
 
+	UPROPERTY(EditAnywhere)
+		class UStaticMeshComponent* mesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
+	class USoundBase* FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
+	class UAnimMontage* FireAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
+	class USkeletalMeshComponent* FP_Gun;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
+	class UParticleSystem* MuzzleParticles;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = EnemySetting);
+	class UParticleSystem* ImpactParticles;
 
 
 };

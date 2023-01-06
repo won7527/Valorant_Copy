@@ -64,6 +64,12 @@ public:
 	UPROPERTY(EditAnywhere)
 	bool isScope = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HP)
+	int32 playerHP = 100;
+
+	UFUNCTION()
+	void Damaged(int32 deal);
+
 
 private:
 	int32 ammo = 25;

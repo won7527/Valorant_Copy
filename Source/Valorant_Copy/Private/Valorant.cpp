@@ -30,6 +30,8 @@ void AValorant::BeginPlay()
 
 	if (player_UI != nullptr) {
 		player_UI->UIammo->SetText(FText::AsNumber(ammo));
+		//플레이어 체력을 ui에 그린다
+		player_UI->UIplayerHP->SetText(FText::AsNumber(playerHP));
 		player_UI->AddToViewport();
 		//player_UI->PrintAmmo();
 	}
@@ -99,5 +101,10 @@ void AValorant::SniperAim()
 			isScope = false;
 		}
 	}
+}
+
+void AValorant::Damaged(int32 deal)
+{
+	playerHP -= deal;
 }
 

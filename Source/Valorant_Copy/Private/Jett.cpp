@@ -16,6 +16,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "Math/Vector.h"
 #include "Valorant.h"
+#include "Enemy.h"
 
 // Sets default values
 AJett::AJett()
@@ -464,6 +465,8 @@ void AJett::StartFire()
 
 				isShotgunDelay = true;
 				GetWorldTimerManager().SetTimer(TimerHandle_ShotgunDelay, this, &AJett::ShotgunDelay, 0.7f, false);
+
+			
 			}
 
 		}
@@ -473,7 +476,7 @@ void AJett::StartFire()
 
 		if (sniperAmmo > 0) {
 
-			FHitResult SniperHit;
+			FHitResult Hit;
 
 			const float SniperRange = 20000.0f;
 			const FVector SniperStartTrace = FirstPersonCameraComponent->GetComponentLocation();
@@ -483,10 +486,10 @@ void AJett::StartFire()
 
 			FCollisionQueryParams SniperQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
 
-			if (GetWorld()->LineTraceSingleByChannel(SniperHit, SniperStartTrace, SniperEndTrace, ECC_Visibility, SniperQueryParams)) {
+			if (GetWorld()->LineTraceSingleByChannel(Hit, SniperStartTrace, SniperEndTrace, ECC_Visibility, SniperQueryParams)) {
 
 				if (SniperImpactParticles) {
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperImpactParticles, FTransform(SniperHit.ImpactNormal.Rotation(), SniperHit.ImpactPoint));
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
 
 					//if (GEngine)
 						//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
@@ -509,6 +512,11 @@ void AJett::StartFire()
 
 			APawn::AddControllerPitchInput(-4.0f);
 			//APawn::AddControllerYawInput(-0.0f);
+			class AEnemy* enemy = Cast<AEnemy>(Hit.GetActor());
+			if (enemy) {
+				if (GEngine)
+					GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("E hit")));
+			}
 
 		}
 
