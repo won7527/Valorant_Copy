@@ -91,24 +91,26 @@ void AValEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AValEnemy::Fire()
 {
+	UE_LOG(LogTemp, Warning, TEXT("sdsd"));
 	FHitResult Hit;
-	FVector StartTrace = GetActorLocation();
+	FVector StartTrace = FP_Gun->GetComponentLocation();
 	for (TActorIterator<AJett>jett(GetWorld()); jett; ++jett)
 	{
 		Jett = *jett;
 	}
 
-	FVector EndTrace = GetActorForwardVector()+20000.0f+StartTrace;
+	FVector EndTrace = Jett->GetActorLocation();//FP_Gun->GetForwardVector() + 20000.0f + StartTrace;
 
-	FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+	FCollisionQueryParams EQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
 
-	if (GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_Visibility, QueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_Visibility, EQueryParams))
 	{
 
 		if (ImpactParticles)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
 		}
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *Hit.GetActor()->GetName());
 
 	}
 
@@ -154,7 +156,7 @@ void AValEnemy::FireDelayEnd()
 
 void AValEnemy::Attacked(int32 deal)
 {
-	HP -= 1;
+	HP -= deal;
 	HPRed->SetRelativeScale3D(FVector(0.1, HPRate * HP, 0.1));
 	HPBlack->SetRelativeScale3D(FVector(0.1, 1 - HPRate * HP, 0.1));
 	HPRed->SetRelativeLocation(FVector(0, 50 * HPRate * (MaxHp - HP), 120));

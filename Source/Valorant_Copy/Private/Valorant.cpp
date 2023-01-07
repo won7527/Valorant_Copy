@@ -9,6 +9,9 @@
 #include "MainWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/TextBlock.h"
+#include "TimerManager.h"
+#include "ValEnemy.h"
+#include "EngineUtils.h"
 
 void AValorant::BeginPlay()
 {
@@ -35,6 +38,13 @@ void AValorant::BeginPlay()
 		player_UI->UIplayerHP->SetText(FText::AsNumber(playerHP));
 		player_UI->AddToViewport();
 		//player_UI->PrintAmmo();
+	}
+
+	for (TActorIterator<AValEnemy> it(GetWorld()); it; ++it) {
+		target = *it;
+	}
+	if (target != nullptr) {
+		//enemys.Emplace(TEXT("name"), target);
 	}
 
 }
@@ -93,14 +103,14 @@ void AValorant::ChangeWeapon()
 	}
 }
 
-void AValorant::SniperAim()
+void AValorant::SniperAimMod()
 {
 	if (sniperWidget != nullptr) {
 		if (isScope == false) {
 			sniperWidget->AddToViewport();
 			isScope = true;
 		}
-		else if (isScope == true) {
+		else {
 			sniperWidget->RemoveFromParent();
 			isScope = false;
 		}
@@ -111,5 +121,17 @@ void AValorant::Damaged(int32 deal)
 {
 	playerHP -= deal;
 	player_UI->UIplayerHP->SetText(FText::AsNumber(playerHP));
+	if (playerHP <= 0) {
+		player->Destroy();
+		player_UI->RemoveFromParent();
+		GetWorldTimerManager().SetTimer(TimerHandle_ResetMap, this, &AValorant::RestartMap, 2.5f, false);
+	}
 }
+
+void AValorant::RestartMap()
+{
+	loseScore++;
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Valorant"));
+}
+
 

@@ -21,6 +21,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	class USoundBase* FireSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	class USoundBase* AKReloadingSound;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	class UAnimMontage* FireAnimation;
 
@@ -51,6 +54,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
 	class USoundBase* ShotgunSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun)
+	class USoundBase* ShotgunReloadingSound;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
 	class UParticleSystem* ShotgunMuzzleParticles;
 
@@ -67,6 +73,9 @@ public:
 	class USoundBase* SniperSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	class USoundBase* SniperReloadingSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
 	class UParticleSystem* SniperMuzzleParticles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
@@ -74,6 +83,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
 	float SniperTimeReload = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
+	float SniperDelayTime = 1.5f;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -85,6 +98,7 @@ protected:
 	FTimerHandle TimerHandle_SniperReload;
 
 	FTimerHandle TimerHandle_ShotgunDelay;
+	FTimerHandle TimerHandle_SniperDelay;
 
 public:	
 	// Called every frame
@@ -103,6 +117,7 @@ public:
 	void Weapon3Use();
 	
 	void SniperAim();
+	void SniperDelay();
 
 	void ShotgunReload();
 	void SniperReload();
@@ -214,7 +229,19 @@ public:
 	bool isWeapon2Use = false;
 	UPROPERTY(EditAnywhere, Category = Shotgun)
 	bool isWeapon3Use = false;
-	
+
+	bool isBefore;
+	bool after;
+
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	bool isPlayerMoving; 
+
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float movingCoef;
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float movingOver6Coef;
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float sniperScopeCoef=0;
 
 
 private:
@@ -236,13 +263,21 @@ private:
 
 	bool isFire = false;
 	bool isShotgunDelay = false;
+	bool isSniperDelay = false;
 
 	float reZ;
 	float reX;
 	float reY;
 
-	FVector YDir;
-	FVector ZDir;
+
+	FVector YDir = FVector(0,0,0);
+	FVector ZDir = FVector(0,0,0);
 
 	class UMainWidget* player_UI;
+
+	class AValorant* myGM;
+
+	FVector BeforeVec;
+	FVector AfterVec;
+	
 };

@@ -112,6 +112,27 @@ void AJett::BeginPlay()
 void AJett::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (isBefore == true) {
+		BeforeVec = GetActorLocation();
+		isBefore = false;
+	}
+	else if (isBefore == false) {
+		AfterVec = GetActorLocation();
+		isBefore = true;
+	}
+
+	if (BeforeVec == AfterVec) {
+		isPlayerMoving = false;
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("same")));
+	}
+	else {
+		isPlayerMoving = true;
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("ddd")));
+	}
+	/*if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("before : %s, after : %s"), *BeforeVec.ToString(), *AfterVec.ToString()));*/
 
 	DashDir = GetActorForwardVector();
 
@@ -215,7 +236,7 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &AJett::LookUp);
 	PlayerInputComponent->BindAxis(TEXT("Horizontal"), this, &AJett::Horizontal);
 	PlayerInputComponent->BindAxis(TEXT("Vertical"), this, &AJett::Vertical);
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AJett::InputJump);
+	PlayerInputComponent->BindAction(TEXT("InputJump"), IE_Pressed, this, &AJett::InputJump);
 	PlayerInputComponent->BindAction(TEXT("Walking"), IE_Pressed, this, &AJett::Walking);
 	PlayerInputComponent->BindAction(TEXT("Walking"), IE_Released, this, &AJett::WalkEnd);
 	PlayerInputComponent->BindAction(TEXT("JumpDash"), IE_Pressed, this, &AJett::JumpDash);
@@ -423,9 +444,10 @@ void AJett::StartFire()
 	{ 
 		if (isWeapon1Use == true) {
 
-			if (ammunition > 0) {
+			if (ammunition >= 1) {
 				isFire = true;
-				GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true);
+				FireShot();
+				GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true, TimeBetweenShots);
 			}
 
 		}
@@ -488,7 +510,7 @@ void AJett::StartFire()
 
 					//���� ź�Ҹ� ���Ӹ�忡 �˸���
 					AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-					AValorant* myGM = Cast<AValorant>(gm);
+					myGM = Cast<AValorant>(gm);
 					myGM->ShotgunMinusAmmo();
 					//�ݵ�
 					APawn::AddControllerPitchInput(-1.2f);
@@ -506,54 +528,80 @@ void AJett::StartFire()
 		}
 		if (isWeapon3Use == true) {
 
+
 			if (sniperAmmo > 0) {
 
-				FHitResult Hit;
+				if (isSniperDelay == false) {
+					//scope
+					AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+					myGM = Cast<AValorant>(gm);
+					if (myGM->isScope == false) {
+						sniperScopeCoef = 0.1f;
+					}
+					else {
+						sniperScopeCoef = 0;
+					}
+					//move
+					if (isPlayerMoving == true) {
+						movingCoef = 0.1f;
+					}
+					else
+					{
+						movingCoef = 0;
+					}
+					FVector randomVec = FVector(0, FMath::RandRange(-sniperScopeCoef-movingCoef, sniperScopeCoef+movingCoef), FMath::RandRange(-sniperScopeCoef-movingCoef, sniperScopeCoef+movingCoef));
+					FHitResult Hit;
+					const float SniperRange = 20000.0f;
+					const FVector SniperStartTrace = FirstPersonCameraComponent->GetComponentLocation();
 
-				const float SniperRange = 20000.0f;
-				const FVector SniperStartTrace = FirstPersonCameraComponent->GetComponentLocation();
+					//��������
+					const FVector SniperEndTrace = (FirstPersonCameraComponent->GetForwardVector()+randomVec)*SniperRange+SniperStartTrace;
 
-				//��������
-				const FVector SniperEndTrace = FirstPersonCameraComponent->GetForwardVector()*SniperRange+SniperStartTrace;
+					FCollisionQueryParams SniperQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
 
-				FCollisionQueryParams SniperQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+					if (GetWorld()->LineTraceSingleByChannel(Hit, SniperStartTrace, SniperEndTrace, ECC_Visibility, SniperQueryParams)) {
 
-				if (GetWorld()->LineTraceSingleByChannel(Hit, SniperStartTrace, SniperEndTrace, ECC_Visibility, SniperQueryParams)) {
+						if (SniperImpactParticles) {
+							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
 
-					if (SniperImpactParticles) {
-						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
+							//if (GEngine)
+									//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
+						}
 
-						//if (GEngine)
-							//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("shots")));
 					}
 
+					if (SniperMuzzleParticles) {
+						UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperMuzzleParticles, FP_Snipergun->GetSocketTransform(FName("Muzzle")));
+					}
+
+					if (SniperSound != nullptr) {
+						UGameplayStatics::PlaySoundAtLocation(this, SniperSound, GetActorLocation());
+					}
+
+					sniperAmmo--;
+					myGM->SniperMinusAmmo();
+
+					APawn::AddControllerPitchInput(-2.0f);
+					//APawn::AddControllerYawInput(-0.0f);
+					/*class AEnemy* enemy = Cast<AEnemy>(Hit.GetActor());
+					if (enemy) {
+						if (GEngine)
+							GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("E hit")));
+					}*/
+
+					//sniper delay
+					isSniperDelay = true;
+					GetWorldTimerManager().SetTimer(TimerHandle_SniperDelay, this, &AJett::SniperDelay, SniperDelayTime, false);
+
+					AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
+					if (enemy)
+					{
+						enemy->Attacked(5);
+					}
+
+
 				}
 
-				if (SniperMuzzleParticles) {
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SniperMuzzleParticles, FP_Snipergun->GetSocketTransform(FName("Muzzle")));
-				}
-
-				if (SniperSound != nullptr) {
-					UGameplayStatics::PlaySoundAtLocation(this, SniperSound, GetActorLocation());
-				}
-
-				sniperAmmo--;
-				AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-				AValorant* myGM = Cast<AValorant>(gm);
-				myGM->SniperMinusAmmo();
-
-				APawn::AddControllerPitchInput(-4.0f);
-				//APawn::AddControllerYawInput(-0.0f);
-				/*class AEnemy* enemy = Cast<AEnemy>(Hit.GetActor());
-				if (enemy) {
-					if (GEngine)
-						GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Yellow, FString::Printf(TEXT("E hit")));
-				}*/
-				AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
-				if (enemy)
-				{
-					enemy->Attacked(5);
-				}
 
 			}
 
@@ -579,6 +627,14 @@ void AJett::FireShot()
 {
 	FHitResult Hit;
 
+	if (isPlayerMoving == true) {
+		movingCoef = 0.1f;
+		movingOver6Coef = 0.05f;
+	}
+	else {
+		movingCoef = 0;
+		movingOver6Coef = 0;
+	}
 	//���� ź������ EndTrace�� ����
 	//���� ������ ī�޶� ���������� ����
 
@@ -597,49 +653,49 @@ void AJett::FireShot()
 		reboundOrigin = rebound;
 	}
 
-	//7�� ������ ������ �����ϴ�
+	//horizontal camera vertical bullet
 	switch (reboundCount) {
 	case 0:
-		YDir = FirstPersonCameraComponent->GetRightVector() * 0;
-		rebound *= 0;
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(-movingCoef, movingCoef);
+		rebound.Z += FMath::RandRange(-movingCoef, movingCoef);
 		reboundCount++;
 		break;
 	case 1:
-		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(-0.01f, 0.01f);
-		rebound.Z += FMath::RandRange(0.005f, 0.01f);
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(-0.01f - movingCoef, 0.01f + movingCoef);
+		rebound.Z += FMath::RandRange(0.005f - movingCoef, 0.01f + movingCoef);
 		reboundCount++;
 		break;
 	case 2:
-		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(-0.01f, 0.01f);
-		rebound.Z += FMath::RandRange(0.005f, 0.01f);
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(-0.01f - movingCoef, 0.01f + movingCoef);
+		rebound.Z += FMath::RandRange(0.005f - movingCoef, 0.01f + movingCoef);
 		reboundCount++;
 		break;
 	case 3:
-		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.01f, 0.17f);
-		rebound.Z += FMath::RandRange(0.05f, 0.06f);
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.01f - movingCoef, 0.17f+ movingCoef);
+		rebound.Z += FMath::RandRange(0.05f- movingCoef, 0.06f+ movingCoef);
 		reboundCount++;
 		break;
 	case 4:
-		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.01f, 0.02f);
-		rebound.Z += FMath::RandRange(0.05f, 0.06f);
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.01f- movingCoef, 0.02f+ movingCoef);
+		rebound.Z += FMath::RandRange(0.05f- movingCoef, 0.06f+ movingCoef);
 		reboundCount++;
 		break;
 	case 5:
-		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.02f, 0.03f);
-		rebound.Z += FMath::RandRange(0.05f, 0.06f);
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.02f- movingCoef, 0.03f+ movingCoef);
+		rebound.Z += FMath::RandRange(0.05f- movingCoef, 0.06f+ movingCoef);
 		reboundCount++;
 		break;
 	case 6:
-		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.03f, 0.04f);
-		rebound.Z += FMath::RandRange(0.05f, 0.06f);
+		YDir = FirstPersonCameraComponent->GetRightVector() * FMath::RandRange(0.03f- movingCoef, 0.04f+ movingCoef);
+		rebound.Z += FMath::RandRange(0.05f- movingCoef, 0.06f+ movingCoef);
 		reboundCount++;
 		break;
 	}
 	if (reboundCount > 6) {
 		//rebound = reboundOrigin;
 		//reX = FMath::RandRange(0.1, 0.3);
-		reY = FMath::RandRange(-0.05f, 0.05f);
-		reZ = FMath::RandRange(-0.05f, 0.05f);
+		reY = FMath::RandRange(-0.05f- movingOver6Coef, 0.05f+ movingOver6Coef);
+		reZ = FMath::RandRange(-0.05f- movingOver6Coef, 0.05f+ movingOver6Coef);
 		YDir = FirstPersonCameraComponent->GetRightVector() * reY;
 		ZDir = FirstPersonCameraComponent->GetUpVector() * reZ;
 		//rebound+=FVector(reX, reY, reZ);
@@ -702,7 +758,7 @@ void AJett::FireShot()
 
 	//ź�Ҹ� ���Ӹ�忡 �˸���
 	AGameModeBase* gm =  UGameplayStatics::GetGameMode(this);
-	AValorant* myGM = Cast<AValorant>(gm);
+	myGM = Cast<AValorant>(gm);
 	myGM->MinusAmmo(1);
 	UE_LOG(LogTemp, Warning, TEXT("%d"), myGM->GetAmmo());
 
@@ -720,6 +776,9 @@ void AJett::FireShot()
 void AJett::ReloadInput() {
 	if (isWeapon1Use == true) {
 		if (isFire == false) {
+			if (AKReloadingSound != nullptr) {
+				UGameplayStatics::PlaySoundAtLocation(this, AKReloadingSound, GetActorLocation());
+			}
 			GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AJett::Reload, TimeReload, false);
 		}
 	}
@@ -731,26 +790,35 @@ void AJett::ReloadInput() {
 	}
 
 	if (isWeapon3Use == true) {
+		if (SniperReloadingSound != nullptr) {
+			UGameplayStatics::PlaySoundAtLocation(this, SniperReloadingSound, GetActorLocation());
+		}
 		GetWorldTimerManager().SetTimer(TimerHandle_Reload, this, &AJett::SniperReload, SniperTimeReload, false);
 	}
 }
 
 void AJett::Reload()
 {
-	ammunition = 25;
-	//�����Ҷ����� ������ ������Ʈ�� �Ѵ�
-	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	AValorant* myGM = Cast<AValorant>(gm);
-	myGM->ReloadAmmo();
+	if (ammunition <= 24) {
+		ammunition = 25;
+		//�����Ҷ����� ������ ������Ʈ�� �Ѵ�
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		myGM = Cast<AValorant>(gm);
+		myGM->ReloadAmmo();
+
+	}
 }
 
 void AJett::ShotgunReload()
 {
 	if (shotgunAmmo < maxShotgunAmmo) {
+		if (ShotgunReloadingSound != nullptr) {
+			UGameplayStatics::PlaySoundAtLocation(this, ShotgunReloadingSound, GetActorLocation());
+		}
 		shotgunAmmo += 1;
 		//������ ���Ӹ�忡 �˸���
 		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-		AValorant* myGM = Cast<AValorant>(gm);
+		myGM = Cast<AValorant>(gm);
 		myGM->ShotgunReloadAmmo();
 		/*if (GEngine)
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("reload")));*/
@@ -763,10 +831,14 @@ void AJett::ShotgunReload()
 
 void AJett::SniperReload()
 {
-	sniperAmmo = 5;
-	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	AValorant* myGM = Cast<AValorant>(gm);
-	myGM->SniperReloadAmmo();
+	if (sniperAmmo <= 4) {
+
+		sniperAmmo = 5;
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		myGM = Cast<AValorant>(gm);
+		myGM->SniperReloadAmmo();
+
+	}
 }
 
 void AJett::ShotgunDelay()
@@ -788,7 +860,7 @@ void AJett::Weapon1Use()
 	FP_Gun->SetVisibility(true);
 	FP_Snipergun->SetVisibility(false);
 	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	AValorant* myGM = Cast<AValorant>(gm);
+	myGM = Cast<AValorant>(gm);
 	myGM->ChangeWeapon();
 }
 
@@ -801,7 +873,7 @@ void AJett::Weapon2Use()
 	FP_Gun->SetVisibility(false);
 	FP_Snipergun->SetVisibility(false);
 	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	AValorant* myGM = Cast<AValorant>(gm);
+	myGM = Cast<AValorant>(gm);
 	myGM->ChangeWeapon();
 }
 
@@ -814,7 +886,7 @@ void AJett::Weapon3Use()
 	FP_Gun->SetVisibility(false);
 	FP_Snipergun->SetVisibility(true);
 	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	AValorant* myGM = Cast<AValorant>(gm);
+	myGM = Cast<AValorant>(gm);
 	myGM->ChangeWeapon();
 }
 
@@ -822,14 +894,19 @@ void AJett::SniperAim()
 {
 	if (isWeapon3Use == true) {
 		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-		AValorant* myGM = Cast<AValorant>(gm);
-		myGM->SniperAim();
+		myGM = Cast<AValorant>(gm);
+		myGM->SniperAimMod();
 		if (myGM->isScope == true) {
 			FirstPersonCameraComponent->SetFieldOfView(20.0f);
 		}
-		if (myGM->isScope != true) {
+		else
 			FirstPersonCameraComponent->SetFieldOfView(90.0f);
-		}
+		
 	}
+}
+
+void AJett::SniperDelay()
+{
+	isSniperDelay = false;
 }
 

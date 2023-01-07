@@ -48,7 +48,7 @@ public:
 
 	void ChangeWeapon();
 
-	void SniperAim();
+	void SniperAimMod();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void Select1();
@@ -67,14 +67,34 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = HP)
 	int32 playerHP = 100;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameScore)
+		int32 winScore = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameScore)
+		int32 loseScore = 0;
+
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = GameScore)
+		TArray<AValEnemy> enemys;*/
+
 	UFUNCTION()
 	void Damaged(int32 deal);
 
+	FTimerHandle TimerHandle_ResetMap;
+
+	UFUNCTION()
+	void RestartMap();
+
+
+
+	
 
 private:
 	int32 ammo = 25;
 
 	int32 shotgunAmmo = 8;
 	int32 sniperAmmo = 5;
+
+	class AValEnemy* target;
+
 
 };
