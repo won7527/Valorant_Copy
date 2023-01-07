@@ -17,11 +17,11 @@ AEnemy::AEnemy()
 	mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("mesh"));
 	mesh->SetupAttachment(RootComponent);
 
-	FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_GUN"));
+	/*FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_GUN"));
 	FP_Gun->SetOnlyOwnerSee(true);
 	FP_Gun->bCastDynamicShadow = false;
 	FP_Gun->CastShadow = false;
-	FP_Gun->SetupAttachment(RootComponent);
+	FP_Gun->SetupAttachment(RootComponent);*/
 
 
 }
