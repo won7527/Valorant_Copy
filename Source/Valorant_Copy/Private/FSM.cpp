@@ -81,14 +81,27 @@ void UFSM::MoveState()
 	me->ismove = true;
 	//destination = target->GetActorLocation();
 	//dir = destination - me->GetActorLocation();
-	if (dir.Size() < followRange)
-	{
-		me->AddMovementInput(dir.GetSafeNormal());
+	if (dir.Size() < soundRange) {
+
+		if (target->isPlayerMakingSound == true) {
+			me->SetActorRotation((target->GetActorLocation() - me->GetActorLocation()).Rotation());
+		}
 	}
 
-	if (dir.Size() <= attackRange)
-	{
-		mState = EEnemyState::Attack;
+	if (me->isPlayerDetected == true) {
+
+
+		if (dir.Size() <= attackRange)
+		{
+			mState = EEnemyState::Attack;
+		}
+		else if (dir.Size() < followRange)
+		{
+			me->ismove = false;
+			me->AddMovementInput(dir.GetSafeNormal());
+			me->SetActorRotation((target->GetActorLocation() - me->GetActorLocation()).Rotation());
+		}
+
 	}
 
 }

@@ -64,7 +64,7 @@ public:
 	class UParticleSystem* ShotgunImpactParticles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shotgun);
-	float ShotgunTimeReload = 1.0f;
+	float ShotgunTimeReload = 0.6f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
 	class USkeletalMeshComponent* FP_Snipergun;
@@ -86,6 +86,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sniper);
 	float SniperDelayTime = 1.5f;
+	//foot Sound
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	class USoundBase* footSound;
 
 
 protected:
@@ -145,10 +148,13 @@ public:
 	void LookUp(float value);
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-	float walkSpeed = 100.0f;
+	float FootSoundDelay = 0.32f;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
-	float runSpeed = 300.0f;
+	float walkSpeed = 300.0f;
+
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	float runSpeed = 600.0f;
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float dashDistance = 3000.0f;
@@ -191,13 +197,49 @@ public:
 	FVector DashDir;
 
 	FVector direction;
-	
 
 	UFUNCTION()
 	void Horizontal(float value);
+
 	UFUNCTION()
 	void Vertical(float value);
-	
+
+	UFUNCTION()
+	void PressedA();
+
+	UFUNCTION()
+	void ReleasedA();
+
+	UPROPERTY(BlueprintReadOnly)
+	bool isPA = false;
+
+	UFUNCTION()
+	void PressedD();
+
+	UFUNCTION()
+	void ReleasedD();
+
+	UPROPERTY(BlueprintReadOnly)
+	bool isPD = false;
+
+	UFUNCTION()
+	void PressedW();
+
+	UFUNCTION()
+	void ReleasedW();
+
+	UPROPERTY(BlueprintReadOnly)
+	bool isPW = false;
+
+	UFUNCTION()
+	void PressedS();
+
+	UFUNCTION()
+	void ReleasedS();
+
+	UPROPERTY(BlueprintReadOnly)
+	bool isPS = false;
+
 	void InputJump ();
 
 	void Walking();
@@ -218,6 +260,10 @@ public:
 
 	void FireSp();
 
+	void PressBuy();
+
+	void ReleaseBuy();
+
 	int32 GetAmmo();
 
 	UPROPERTY(EditAnywhere, Category = Shotgun)
@@ -237,11 +283,17 @@ public:
 	bool isPlayerMoving; 
 
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
+	bool isOnSreen = false;
+
+	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float movingCoef;
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float movingOver6Coef;
 	UPROPERTY(EditAnywhere, Category = PlayerSetting)
 	float sniperScopeCoef=0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isPlayerMakingSound = false;
 
 
 private:
@@ -260,10 +312,15 @@ private:
 
 
 	float currentTime;
+	float FootSoundInitial = 0;
 
 	bool isFire = false;
 	bool isShotgunDelay = false;
 	bool isSniperDelay = false;
+
+	//footsound bool
+	bool isWalking = false;
+
 
 	float reZ;
 	float reX;

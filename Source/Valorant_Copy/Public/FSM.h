@@ -62,10 +62,13 @@ public:
 	class AValEnemy* me;
 
 	UPROPERTY(EditAnywhere, Category = FSM)
-	float followRange = 2000.0f;
+	float followRange = 10000.0f;
 
 	UPROPERTY(EditAnywhere, Category=FSM)
-	float attackRange = 1500.0f;
+	float attackRange = 800.0f;
+
+	UPROPERTY(EditAnywhere, Category = FSM)
+	float soundRange = 4000.0f;
 
 	FVector destination;
 

@@ -39,7 +39,7 @@ void AValEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MaxHp = 5;
+	MaxHp = 10;
 	HP = MaxHp;
 	HPRate = 1/MaxHp;
 }
@@ -49,37 +49,65 @@ void AValEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	
-	if (ismove == true) {
+	if (enemyMoveSet == true) {
 
-		cur += DeltaTime;
-		if (isturn == false) {
-			if (cur < 1.5) {
-				AddMovementInput(GetActorForwardVector());
+		if (ismove == true) {
 
+			cur += DeltaTime;
+			if (isturn == false) {
+				if (cur < 1.5) {
+					AddMovementInput(GetActorForwardVector());
+
+				}
+				else {
+					isturn = true;
+					cur = 0;
+					SetActorRotation(GetActorRotation() - FRotator(0, -180, 0));
+				}
 			}
-			else {
-				isturn = true;
-				cur = 0;
-				SetActorRotation(GetActorRotation() - FRotator(0, -180, 0));
-			}
-		}
-		if (isturn == true)
-		{
-			if (cur < 1.5)
+			if (isturn == true)
 			{
-				AddMovementInput(GetActorForwardVector());
+				if (cur < 1.5)
+				{
+					AddMovementInput(GetActorForwardVector());
+				}
+				else {
+					isturn = false;
+					cur = 0;
+					SetActorRotation(GetActorRotation() - FRotator(0, -180, 0));
+				}
 			}
-			else {
-				isturn = false;
-				cur = 0;
-				SetActorRotation(GetActorRotation() - FRotator(0, -180, 0));
-			}
-		}
 
-		
+		}
 
 	}
+	for (int i = 0; i < 5; i++) {
+
+		FVector StartTrace = GetActorLocation();
+
+		FVector sightDetectRangeTotalVec = GetActorRightVector() * (-0.5 * sightDetectRange * 4);
+		FVector sightDetectRangeVec = GetActorRightVector() * (sightDetectRange * i);
+
+		FVector EndTrace = (GetActorForwardVector() + sightDetectRangeTotalVec + sightDetectRangeVec) * 5000.0f + StartTrace;
+		FCollisionQueryParams EQueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(WeaponTrace), false, this);
+		GetWorld()->LineTraceSingleByChannel(Hit_detect, StartTrace, EndTrace, ECC_Visibility, EQueryParams);
+
+		//when player detacted
+		AJett* jett = Cast<AJett>(Hit_detect.GetActor());
+		if (jett!=nullptr) {
+			isPlayerDetected = true;
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("detect")));
+			break;
+		}
+		else {
+			isPlayerDetected = false;
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("not")));
+
+		}
+	}
+
 }
 
 // Called to bind functionality to input
@@ -130,11 +158,13 @@ void AValEnemy::Fire()
 	}
 
 	AJett* jett = Cast<AJett>(Hit.GetActor());
-	if (jett) {
+	if (jett!=nullptr) {
 		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 		AValorant* myGM = Cast<AValorant>(gm);
-		myGM->Damaged(5);
-		UE_LOG(LogTemp, Warning, TEXT("playerHit"));
+		if (myGM != nullptr) {
+			myGM->Damaged(5);
+		}
+		//UE_LOG(LogTemp, Warning, TEXT("playerHit"));
 	}
 
 	isDelay = true;
@@ -166,8 +196,35 @@ void AValEnemy::Attacked(int32 deal)
 
 
 	UE_LOG(LogTemp, Warning, TEXT("HIT"));
-	if (HP == 0)
+	if (HP <= 0)
 	{
+		if (DeathParticles != nullptr) {
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), DeathParticles, GetActorLocation());
+		}
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		AValorant* myGM = Cast<AValorant>(gm);
+		if (myGM != nullptr) {
+
+			myGM->enemyNum--;
+			//when enemy all Destroy = round win
+			if (myGM->enemyNum <= 0) {
+				EnemyAllDestory();
+			}
+		}
+		myGM->Money += 500;
 		this->Destroy();
+	}
+}
+
+void AValEnemy::EnemyAllDestory()
+{
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	if (myGM != nullptr) {
+		//widget print
+		myGM->RWinWidgetPrint();
+		//restart delay
+		FTimerHandle TimerHandle_win;
+		GetWorldTimerManager().SetTimer(TimerHandle_win, myGM, &AValorant::WinRound, 2.5f, false);
 	}
 }

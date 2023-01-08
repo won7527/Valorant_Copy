@@ -53,6 +53,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
 	class UParticleSystem* ImpactParticles;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay);
+	class UParticleSystem* DeathParticles;
+
 	class AJett* Jett;
 
 	int32 ammunition = 25;
@@ -75,9 +78,22 @@ public:
 
 	void Attacked(int32 deal);
 
+	void EnemyAllDestory();
+
 	float cur;
 	bool ismove=false;
 	bool isturn = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = enemyMoveSetting);
+	bool enemyMoveSet = true;
+
+	bool isPlayerDetected = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = enemyMoveSetting);
+	FHitResult Hit_detect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = enemyMoveSetting);
+	float sightDetectRange = 0.5f;
 
 
 

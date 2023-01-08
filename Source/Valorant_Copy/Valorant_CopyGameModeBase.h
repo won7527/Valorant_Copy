@@ -13,5 +13,10 @@ UCLASS()
 class VALORANT_COPY_API AValorant_CopyGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	int32 winRound = 0;
+
+	int32 loseRound = 0;
 	
 };

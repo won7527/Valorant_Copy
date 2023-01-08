@@ -23,6 +23,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
 	class UTextBlock* UIplayerHP;
 
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UIwinRound;
+
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UIloseRound;
+
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UImoney;
+
 	//void PrintAmmo();
 
 

@@ -18,15 +18,22 @@ void UCharacterSelectWidget::Select1()
 {
 	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 	AValorant* myGM = Cast<AValorant>(gm);
-	myGM->Select1();
-	//UGameplayStatics::OpenLevel(GetWorld(), TEXT("Valorant"));
-	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
-	this->RemoveFromParent();
+	if (myGM != nullptr){ 
+		myGM->isOnSreenF();
+		myGM->Select1();
+		//UGameplayStatics::OpenLevel(GetWorld(), TEXT("Valorant"));
+		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
+		this->RemoveFromParent();
+	}
 }
 
 void UCharacterSelectWidget::Select2()
 {
-
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	AValorant* myGM = Cast<AValorant>(gm);
+	if (myGM != nullptr) {
+		myGM->isOnSreenF();
+	}
 	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
 	this->RemoveFromParent();
 }

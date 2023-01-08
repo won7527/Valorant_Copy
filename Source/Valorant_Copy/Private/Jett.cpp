@@ -112,6 +112,11 @@ void AJett::BeginPlay()
 void AJett::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	/*if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("isPlayerMakingSound : %d"), isPlayerMakingSound));*/
+
+	//player location check
 	if (isBefore == true) {
 		BeforeVec = GetActorLocation();
 		isBefore = false;
@@ -123,16 +128,63 @@ void AJett::Tick(float DeltaTime)
 
 	if (BeforeVec == AfterVec) {
 		isPlayerMoving = false;
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("same")));
+		/*if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("same")));*/
 	}
 	else {
 		isPlayerMoving = true;
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("ddd")));
+		/*if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("ddd")));*/
 	}
 	/*if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("before : %s, after : %s"), *BeforeVec.ToString(), *AfterVec.ToString()));*/
+
+	//footSound
+	
+	if (isWalking == false) {
+		//when pressed anykey
+		if (isPA || isPD || isPW || isPS) {
+			// A and D or W and S is don't pressed sameTime or ADW, ADS, WSA, WSD pressed sameTime can go 
+			if ((!((isPA && isPD) || (isPW && isPS))) || ((isPA && isPD && isPW) || (isPA && isPD && isPS) || (isPW && isPS && isPA) || (isPW && isPS && isPD))) {
+
+				FootSoundInitial += DeltaTime;
+				if (FootSoundInitial >= FootSoundDelay) {
+
+					if (footSound != nullptr) {
+
+						UGameplayStatics::PlaySoundAtLocation(this, footSound, GetActorLocation());
+
+					}
+
+					FootSoundInitial = 0;
+					isPlayerMakingSound = true;
+				}
+
+			}
+			else if (isFire == true || isShotgunDelay == true || isSniperDelay == true) {
+				isPlayerMakingSound = true;
+			}
+			else {
+				isPlayerMakingSound = false;
+			}
+
+		}
+		else if (isFire == true || isShotgunDelay == true || isSniperDelay == true) {
+			isPlayerMakingSound = true;
+		}
+		else {
+			isPlayerMakingSound = false;
+		}
+
+	}
+	else if (isFire == true || isShotgunDelay == true || isSniperDelay == true) {
+		isPlayerMakingSound = true;
+	}
+	else {
+		isPlayerMakingSound = false;
+	}
+
+
 
 	DashDir = GetActorForwardVector();
 
@@ -198,7 +250,7 @@ void AJett::Tick(float DeltaTime)
 	if (isFire) {
 
 		currentTime += DeltaTime;
-		if (currentTime > TimeBetweenShots) {
+		if (currentTime >= TimeBetweenShots) {
 			if (recoilCount < 7) {
 				APawn::AddControllerPitchInput(-0.5f);
 				recoilCount += 1;
@@ -258,19 +310,40 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Pressed, this, &AJett::SniperAim);
 	PlayerInputComponent->BindAction(TEXT("FireSp"), IE_Released, this, &AJett::SniperAim);
 
+	//sound When Pressed
+	PlayerInputComponent->BindAction(TEXT("A"), IE_Pressed, this, &AJett::PressedA);
+	PlayerInputComponent->BindAction(TEXT("D"), IE_Pressed, this, &AJett::PressedD);
+	PlayerInputComponent->BindAction(TEXT("W"), IE_Pressed, this, &AJett::PressedW);
+	PlayerInputComponent->BindAction(TEXT("S"), IE_Pressed, this, &AJett::PressedS);
+	//sound when released
+	PlayerInputComponent->BindAction(TEXT("A"), IE_Released, this, &AJett::ReleasedA);
+	PlayerInputComponent->BindAction(TEXT("D"), IE_Released, this, &AJett::ReleasedD);
+	PlayerInputComponent->BindAction(TEXT("W"), IE_Released, this, &AJett::ReleasedW);
+	PlayerInputComponent->BindAction(TEXT("S"), IE_Released, this, &AJett::ReleasedS);
+
+	//buysreen
+	PlayerInputComponent->BindAction(TEXT("Buy"), IE_Pressed, this, &AJett::PressBuy);
+	PlayerInputComponent->BindAction(TEXT("Buy"), IE_Released, this, &AJett::ReleaseBuy);
 
 	
 }
 
 void AJett::Turn(float value)
 {
+	if (isOnSreen == true) {
+		value = 0;
+	}
 	AddControllerYawInput(value);
 }
 
 void AJett::LookUp(float value)
 {
+	if (isOnSreen == true) {
+		value = 0;
+	}
 	AddControllerPitchInput(value);
 }
+
 
 void AJett::Horizontal(float value)
 {
@@ -282,6 +355,7 @@ void AJett::Horizontal(float value)
 	//CharacterMoveDir.Normalize();
 	yValue = value;
 }
+
 
 void AJett::Vertical(float value)
 {
@@ -295,6 +369,46 @@ void AJett::Vertical(float value)
 	xValue = value;
 }
 
+void AJett::PressedA()
+{
+	isPA = true;
+}
+
+void AJett::ReleasedA()
+{
+	isPA = false;
+}
+
+void AJett::PressedD()
+{
+	isPD = true;
+}
+
+void AJett::ReleasedD()
+{
+	isPD = false;
+}
+
+void AJett::PressedW()
+{
+	isPW = true;
+}
+
+void AJett::ReleasedW()
+{
+	isPW = false;
+}
+
+void AJett::PressedS()
+{
+	isPS = true;
+}
+
+void AJett::ReleasedS()
+{
+	isPS = false;
+}
+
 void AJett::InputJump()
 {
 	Jump();
@@ -302,11 +416,15 @@ void AJett::InputJump()
 
 void AJett::Walking()
 {
+	//when iswalking true no footSound
+	isWalking = true;
 	GetCharacterMovement()->MaxWalkSpeed = walkSpeed;
 }
 
 void AJett::WalkEnd()
 {
+	////when iswalking false footSound
+	isWalking = false;
 	GetCharacterMovement()->MaxWalkSpeed = runSpeed;
 }
 
@@ -435,6 +553,24 @@ void AJett::FireSp()
 
 }
 
+void AJett::PressBuy()
+{
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	myGM = Cast<AValorant>(gm);
+	if (myGM != nullptr) {
+		myGM->PrintBuy();
+	}
+}
+
+void AJett::ReleaseBuy()
+{
+	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+	myGM = Cast<AValorant>(gm);
+	if (myGM != nullptr) {
+		myGM->RemoveBuy();
+	}
+}
+
 
 void AJett::StartFire()
 {
@@ -447,7 +583,11 @@ void AJett::StartFire()
 			if (ammunition >= 1) {
 				isFire = true;
 				FireShot();
-				GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true, TimeBetweenShots);
+				isPlayerMakingSound = true;
+				//when ammo is 1 can't fire twice
+				if (ammunition >= 2) {
+					GetWorldTimerManager().SetTimer(TimerHandle_HandleRefire, this, &AJett::FireShot, TimeBetweenShots, true, TimeBetweenShots);
+				}
 			}
 
 		}
@@ -471,8 +611,8 @@ void AJett::StartFire()
 						//FVector totalSpace = FirstPersonCameraComponent->GetRightVector()*(- 0.5 * (pellet - 1) * 0.1f);
 						//FVector space = FirstPersonCameraComponent->GetRightVector() * (0.1f * i);
 
-						float yRand = FMath::RandRange(-0.05f*i, 0.05f*i);
-						float ZRand = FMath::RandRange(-0.05f*i, 0.05f*i);
+						float yRand = FMath::RandRange(-0.02f*i, 0.02f*i);
+						float ZRand = FMath::RandRange(-0.02f*i, 0.02f*i);
 						FVector Y = FirstPersonCameraComponent->GetRightVector() * yRand;
 						FVector Z = FirstPersonCameraComponent->GetUpVector() * ZRand;
 
@@ -491,9 +631,9 @@ void AJett::StartFire()
 				
 						}
 						AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
-						if (enemy)
+						if (enemy!=nullptr)
 						{
-							enemy->Attacked(1);
+							enemy->Attacked(2);
 						}
 		
 					}
@@ -517,7 +657,8 @@ void AJett::StartFire()
 					APawn::AddControllerYawInput(-0.5f);
 
 					isShotgunDelay = true;
-					GetWorldTimerManager().SetTimer(TimerHandle_ShotgunDelay, this, &AJett::ShotgunDelay, 0.7f, false);
+					isPlayerMakingSound = true;
+					GetWorldTimerManager().SetTimer(TimerHandle_ShotgunDelay, this, &AJett::ShotgunDelay, 1.0f, false);
 
 
 				
@@ -591,12 +732,13 @@ void AJett::StartFire()
 
 					//sniper delay
 					isSniperDelay = true;
+					isPlayerMakingSound = true;
 					GetWorldTimerManager().SetTimer(TimerHandle_SniperDelay, this, &AJett::SniperDelay, SniperDelayTime, false);
 
 					AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
-					if (enemy)
+					if (enemy!=nullptr)
 					{
-						enemy->Attacked(5);
+						enemy->Attacked(10);
 					}
 
 
@@ -621,6 +763,7 @@ void AJett::StopFire()
 	YDir = FVector(0, 0, 0);
 	ZDir = FVector(0, 0, 0);
 	isFire = false;
+	isPlayerMakingSound = false;
 }
 
 void AJett::FireShot()
@@ -746,10 +889,18 @@ void AJett::FireShot()
 		}
 	}
 
+	//맞은 타겟과의 거리계산
+	FVector distance = FirstPersonCameraComponent->GetComponentLocation() - Hit.ImpactPoint;
+
 	AValEnemy* enemy = Cast<AValEnemy>(Hit.GetActor());
-	if (enemy)
+	if (enemy!=nullptr)
 	{
-		enemy->Attacked(1);
+		if (distance.Size() < 500.0f) {
+			enemy->Attacked(3);
+		}
+		else {
+			enemy->Attacked(1);
+		}
 	}
 
 
@@ -844,6 +995,7 @@ void AJett::SniperReload()
 void AJett::ShotgunDelay()
 {
 	isShotgunDelay = false;
+	isPlayerMakingSound = false;
 }
 
 int32 AJett::GetAmmo()
@@ -895,12 +1047,15 @@ void AJett::SniperAim()
 	if (isWeapon3Use == true) {
 		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 		myGM = Cast<AValorant>(gm);
-		myGM->SniperAimMod();
-		if (myGM->isScope == true) {
-			FirstPersonCameraComponent->SetFieldOfView(20.0f);
+		if (myGM != nullptr) {
+
+			myGM->SniperAimMod();
+			if (myGM->isScope == true) {
+				FirstPersonCameraComponent->SetFieldOfView(20.0f);
+			}
+			else
+				FirstPersonCameraComponent->SetFieldOfView(90.0f);
 		}
-		else
-			FirstPersonCameraComponent->SetFieldOfView(90.0f);
 		
 	}
 }
@@ -908,5 +1063,6 @@ void AJett::SniperAim()
 void AJett::SniperDelay()
 {
 	isSniperDelay = false;
+	isPlayerMakingSound = false;
 }
 
