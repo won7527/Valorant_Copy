@@ -67,7 +67,7 @@ void AYQPredator::Tick(float DeltaTime)
 
 		//DeltaTime을 4초가 지나면 (4초가 지났는지 확인)
 		currentTime += DeltaTime;
-		if (currentTime > 4) {
+		if (currentTime > 2) {
 			predatorSpeed = 1000;
 			//UE_LOG(LogTemp, Warning, TEXT("Speed is back"));
 
