@@ -3,9 +3,14 @@
 
 #include "YReyna.h"
 #include <GameFramework/SpringArmComponent.h> //SpringArm Component 등록
-#include "GameFramework/Actor.h"
-#include <Kismet/GameplayStatics.h>
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "EngineUtils.h"
+#include "YCEyeshot.h"
+#include "YQPredator.h"
+#include "CollisionQueryParams.h"
 #include <Camera/CameraComponent.h> //UCamera Component 등록
+
 
 // Sets default values
 AYReyna::AYReyna()
@@ -26,7 +31,7 @@ AYReyna::AYReyna()
 		yReynaCamComp->SetupAttachment(CastChecked<USceneComponent, UCapsuleComponent>(GetCapsuleComponent()));
 
 		//카메라 위치 눈높이쯤 맞추기
-		yReynaCamComp->SetRelativeLocation(FVector(0.0f, 0.0f, 40.0f));
+		//yReynaCamComp->SetRelativeLocation(FVector(0.0f, 0.0f, 40.0f));
 
 		//카메라 회전을 pawn이 컨트롤 할 수 있도록
 		yReynaCamComp->bUsePawnControlRotation = true;
@@ -77,6 +82,8 @@ AYReyna::AYReyna()
 void AYReyna::BeginPlay()
 {
 	Super::BeginPlay();
+
+
 	
 }
 
@@ -89,8 +96,9 @@ void AYReyna::Tick(float DeltaTime)
 	Reynadirection.Normalize();
 	FVector dir = GetActorLocation() + Reynadirection * walkSpeed * DeltaTime;
 	SetActorLocation(dir);
-
+	
 }
+
 
 // Called to bind functionality to input
 void AYReyna::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -120,6 +128,9 @@ void AYReyna::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	//EyeShot Skill 눈총스킬 키보드 C 연결
 	PlayerInputComponent->BindAction(TEXT("EyeShotSkill"), IE_Pressed, this, &AYReyna::EyeShotSkill);
+
+	//Predator Skill 포식스킬 키보드 Q 연결
+	PlayerInputComponent->BindAction(TEXT("PredatorSkill"), IE_Pressed, this, &AYReyna::PredatorSkill);
 
 }
 
@@ -208,54 +219,101 @@ void AYReyna::Fire()
 			
 		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Firebullet is Working"));
 }
 
 void AYReyna::EyeShotSkill() {
+
 	
-	//눈총 스킬	
-	FHitResult Hit;
 
-	// 라인트레이스는 캐릭터로부터 1000 떨어진 위치까지 따라간다 
-	//  >> 10 부터 1000까지의 범위로 지정할 수 있도록 바꿔야한다
-	FVector TraceStart = GetActorLocation();
-	FVector TraceEnd = GetActorLocation() + GetActorForwardVector() * 1000.0f;
-	                                                               // 1000을 화면에 클릭하는 위치를
-																   //가리키는 함수로 만들어줘야하지 않을까
+	if (ProjectileClass)
+	{
+		//카메라 위치 잡기
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		GetActorEyesViewPoint(CameraLocation, CameraRotation); //눈높이설정(?)
 
-	// FCollisionQueryParams
-	// 라인트레이스가 액터를 막지 않도록
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-		                            //충돌정보, 시작위치, 종료위치,     검출 채널,         충돌옵션
-	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, TraceChannelProperty, QueryParams);
+		//카메라 앞에서의 총구(Muzzle) 위치를 대략적으로 설정한다
+		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
 
-	//충돌하면 
+		//카메라 앞에 세워둘 총구의 위치를 world로(world location 같은 느낌인듯)
+		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
-	// 디버깅 잘 되는지 확인하기
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Blue : FColor::Red, false, 5.0f, 0, 10.0f);
-	UE_LOG(LogTemp, Log, TEXT("Tracing line: %s to %s"), *TraceStart.ToCompactString(), *TraceEnd.ToCompactString());
+		//Skew the aim to be slightly upwards(위쪽으로 살짝 비스듬히 조절하라?) Skew : 비스듬히 움직이다
+		FRotator MuzzleRotation = CameraRotation;
+		MuzzleRotation.Pitch += 10.0f;
 
-	// 라인트레이스가 충돌하면  bBlockingHit은 true,
-	// 무엇을 치는지 보여줄 것이다.
-	if (Hit.bBlockingHit && IsValid(Hit.GetActor()))
-	{	
-		UE_LOG(LogTemp, Log, TEXT("Trace hit actor: %s"), *Hit.GetActor()->GetName());
+
+		if (GetWorld())
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = GetInstigator();
+
+			//instigator을 가해자로 생각할 것.
+			//내가 몬스터를 화살로 공격한다 >> instigator가 나(캐릭터가 발생시킨 가해자)
+						
+			AYCEyeshot* Projectile = GetWorld()->SpawnActor<AYCEyeshot>(eyeShot, MuzzleLocation, MuzzleRotation, SpawnParams);
+
+			//if (Projectile) {
+
+				//projectile(충돌체(?))의 궤적 설정하기 (Set the projectile's initial trajectory)
+			FVector LaunchDirection = MuzzleRotation.Vector();
+
+			//레이나의 방향으로 총을 발사하는 궤적을 지정할것이다
+			//(AYReyna::Projectile)->(AYReynaile::iledirection(LaunchDirection));
+		     //}
+
+			Projectile->bIsSpawnSightBlock = true;
+		}
 	}
-	else {
-		UE_LOG(LogTemp, Log, TEXT("No Actors were hit"));
+	UE_LOG(LogTemp, Warning, TEXT("EyeshotSkill is Working"));
+}
+
+void AYReyna::PredatorSkill() {
+
+	if (ProjectileClass)
+	{
+		//카메라 위치 잡기
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		GetActorEyesViewPoint(CameraLocation, CameraRotation); //눈높이설정(?)
+
+		//카메라 앞에서의 총구(Muzzle) 위치를 대략적으로 설정한다
+		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
+		//카메라 앞에 세워둘 총구의 위치를 world로(world location 같은 느낌인듯)
+		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+		//Skew the aim to be slightly upwards(위쪽으로 살짝 비스듬히 조절하라?) Skew : 비스듬히 움직이다
+		FRotator MuzzleRotation = CameraRotation;
+		MuzzleRotation.Pitch += 10.0f;
+
+		
+
+		if (GetWorld())
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.Instigator = GetInstigator();
+
+			//instigator을 가해자로 생각할 것.
+			//내가 몬스터를 화살로 공격한다 >> instigator가 나(캐릭터가 발생시킨 가해자)
+
+			AYQPredator* Projectile = GetWorld()->SpawnActor<AYQPredator>(predator, MuzzleLocation, MuzzleRotation, SpawnParams);
+
+			//if (Projectile) {
+
+				//projectile(충돌체(?))의 궤적 설정하기 (Set the projectile's initial trajectory)
+			FVector LaunchDirection = MuzzleRotation.Vector();
+
+			//레이나의 방향으로 총을 발사하는 궤적을 지정할것이다
+			//(AYReyna::Projectile)->(AYReynaile::iledirection(LaunchDirection));
+		//}
+
+		}
 	}
-
-	
-
-	//파편효과 트렌스폼
-	FTransform bulletTrans;
-	
-	//부딪힌 위치 할당
-	bulletTrans.SetLocation(Hit.ImpactPoint);
-	
-	//총알 파편효과 인스턴스 생성
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), bulletEffectFactory, bulletTrans);
-
+	UE_LOG(LogTemp, Warning, TEXT("PredatorSkill is Working"));
 }
 
 void AYReyna::SilentStep()

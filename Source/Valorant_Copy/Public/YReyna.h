@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/Actor.h"
 #include "Camera/CameraComponent.h"
 #include"Components/CapsuleComponent.h"
 #include "YReynaile.h"
@@ -40,18 +41,13 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//SpringArm Component 추가
-	UPROPERTY(VisibleAnywhere, Category = Camera)
-		class USpringArmComponent* springArmComp;
 
 	//UCamera Component 추가
-	UPROPERTY(EditAnywhere, Category = Camera)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
 		class UCameraComponent* yReynaCamComp;
 
-
-
 	//1인칭 카메라 추가
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Mesh)
 	USkeletalMeshComponent* FPSMesh;
 
 	//이동속도
@@ -86,12 +82,25 @@ public:
 
 	//총알 파편 효과
 	UPROPERTY(EditAnywhere, Category = BluePrintEffect)
-	class UParticleSystem* bulletEffectFactory;
+		class UParticleSystem* bulletEffectFactory;
+	
+	
+	/*스킬*/
 
 	//눈총 스킬 EyeshotSkill
 	void EyeShotSkill();
-	UPROPERTY(EditAnywhere, Category = "Collision")
-	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
+// 	UPROPERTY(EditAnywhere, Category = "Collision")
+// 	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
+
+	UPROPERTY(EditAnywhere, Category = EyeshotSettings)
+	TSubclassOf<class AYCEyeshot> eyeShot;
+
+	//포식 스킬 Predator
+	void PredatorSkill();
+	UPROPERTY(EditAnywhere, Category = EyeshotSettings)
+	TSubclassOf<class AYQPredator> predator;
+
+		
 
 	//카메라 위치로부터 총구의 위치를 잡는다(?)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
@@ -99,6 +108,7 @@ public:
 
 	//SilentStep
 	void SilentStep();
+
 
 	//TelescopeSight 조준경
 	void TelescopeSight();
@@ -115,6 +125,9 @@ public:
 
 	//무기고 오픈
 	void WeaponStorageOpen();
+
+private:
+	class AYReyna* ytarget;
 
 
 };

@@ -32,18 +32,14 @@ AYBullet::AYBullet()
 	bodyMeshComp->SetRelativeScale3D(FVector(0.2f));
 
 	//생명주기
-	InitialLifeSpan = 2.0f;
+	InitialLifeSpan = 1.5f;
 }
 
 // Called when the game starts or when spawned
 void AYBullet::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//이동
-
-	//충돌하면?
-	
+		
 }
 
 // Called every frame
@@ -59,13 +55,12 @@ void AYBullet::Tick(float DeltaTime)
 
 void AYBullet::DestroyMySelf()
 {
-	GetWorld()->GetTimerManager().SetTimer(lifeTimer, this, &AYBullet::DestroyMySelf, 2.0f, false);
+	GetWorld()->GetTimerManager().SetTimer(lifeTimer, this, &AYBullet::DestroyMySelf, 1.5f, false);
 }
 
 void AYBullet::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	
 	//상대와 총알이 충돌했을때
-
 
 }
 
