@@ -21,7 +21,7 @@
 
 AValorant::AValorant()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AValorant::BeginPlay()
@@ -49,18 +49,22 @@ void AValorant::BeginPlay()
 	FFileHelper::LoadFileToString(loseText, *loseFilePath);
 	loseScore = FCString::Atoi(*loseText);
 
+	//first round money
+	if (winScore == 0 && loseScore == 0) {
+		FFileHelper::SaveStringToFile(FString::FromInt(500), *moneyFilePath);
+	}
 	FString moneyText;
 	FFileHelper::LoadFileToString(moneyText, *moneyFilePath);
 	Money = FCString::Atoi(*moneyText);
 
+	//selectwidget print
 	if (SelectWidget != nullptr) {
 		SelectWidget->AddToViewport();
 		isOnSreenT();
 		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	}
 
-	//ammo = jet->GetAmmo();
-
+	//playerUI print
 	if (player_UI != nullptr) {
 		player_UI->UIammo->SetText(FText::AsNumber(ammo));
 		player_UI->UIplayerHP->SetText(FText::AsNumber(playerHP));
@@ -84,12 +88,28 @@ void AValorant::BeginPlay()
 
 		}
 	}
+	if (player_UI != nullptr) {
+		player_UI->UIenemyNum->SetText(FText::AsNumber(enemyNum));
+	}
 
 }
 
 void AValorant::Tick(float DeltaTime) {
 
 	Super::Tick(DeltaTime);
+
+	cur += DeltaTime;
+	if (cur >= 1) {
+		GameTimer--;
+		if (player_UI != nullptr) {
+			player_UI->UItimer->SetText(FText::AsNumber(GameTimer));
+		}
+		cur = 0;
+	}
+	
+	if (GameTimer == 0) {
+		LoseRound();
+	}
 
 }
 
@@ -164,22 +184,26 @@ void AValorant::SniperAimMod()
 void AValorant::Damaged(int32 deal)
 {
 	playerHP -= deal;
-	player_UI->UIplayerHP->SetText(FText::AsNumber(playerHP));
-	//when player die
-	if (playerHP <= 0) {
-		if (RLoseWidget != nullptr) {
-			RLoseWidget->AddToViewport();
-		}
-		if (player != nullptr) {
+	if (player_UI != nullptr) {
+
+		player_UI->UIplayerHP->SetText(FText::AsNumber(playerHP));
+		//when player die
+		if (playerHP <= 0) {
+			if (RLoseWidget != nullptr) {
+				RLoseWidget->AddToViewport();
+			}
+			//player inVisiable
 			player->Destroy();
+
 			player_UI->RemoveFromParent();
 			GetWorldTimerManager().SetTimer(TimerHandle_ResetMap, this, &AValorant::LoseRound, 2.5f, false);
-			}
+		}
 	}
 }
 
 void AValorant::LoseRound()
 {
+	UE_LOG(LogTemp, Warning, TEXT("loseeeeee"));
 	loseScore++;
 	if (loseScore >= 3) {
 		UDefeatWidget* DefeatWidget = CreateWidget<UDefeatWidget>(GetWorld(), DefeatWidgetBP);
@@ -187,7 +211,7 @@ void AValorant::LoseRound()
 			DefeatWidget->AddToViewport();
 			FFileHelper::SaveStringToFile(FString::FromInt(0), *loseFilePath);
 			FFileHelper::SaveStringToFile(FString::FromInt(0), *winFilePath);
-			FFileHelper::SaveStringToFile(FString::FromInt(0), *moneyFilePath);
+			FFileHelper::SaveStringToFile(FString::FromInt(500), *moneyFilePath);
 		}
 		if (player_UI != nullptr) {
 			player_UI->RemoveFromParent();
@@ -212,7 +236,7 @@ void AValorant::WinRound()
 			VictoryWidget->AddToViewport();
 			FFileHelper::SaveStringToFile(FString::FromInt(0), *winFilePath);
 			FFileHelper::SaveStringToFile(FString::FromInt(0), *loseFilePath);
-			FFileHelper::SaveStringToFile(FString::FromInt(0), *moneyFilePath);
+			FFileHelper::SaveStringToFile(FString::FromInt(500), *moneyFilePath);
 		}
 		if (player_UI != nullptr) {
 			player_UI->RemoveFromParent();
@@ -261,20 +285,32 @@ void AValorant::PrintBuy()
 {
 	if (BuyWidget != nullptr) {
 		BuyWidget->AddToViewport();
+		isOnSreenT();
+		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 	}
-	isOnSreenT();
-	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(true);
 }
 
 void AValorant::RemoveBuy()
 {
 	if (BuyWidget != nullptr) {
 		BuyWidget->RemoveFromParent();
+		isOnSreenF();
+		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
 	}
-	isOnSreenF();
-	GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);
 }
 
+void AValorant::UpMoney()
+{
+	if (player_UI != nullptr) {
+		player_UI->UImoney->SetText(FText::AsNumber(Money));
+		player_UI->UIenemyNum->SetText(FText::AsNumber(enemyNum));
+	}
+}
 
-
+//void AValorant::P_DestroyDelay()
+//{
+//	if (player != nullptr) {
+//		player->Destroy();
+//	}
+//}
 

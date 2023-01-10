@@ -96,14 +96,14 @@ void AValEnemy::Tick(float DeltaTime)
 		AJett* jett = Cast<AJett>(Hit_detect.GetActor());
 		if (jett!=nullptr) {
 			isPlayerDetected = true;
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("detect")));
+			/*if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("detect")));*/
 			break;
 		}
 		else {
 			isPlayerDetected = false;
-			if (GEngine)
-				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("not")));
+			/*if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("not")));*/
 
 		}
 	}
@@ -119,7 +119,7 @@ void AValEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AValEnemy::Fire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("sdsd"));
+	//UE_LOG(LogTemp, Warning, TEXT("sdsd"));
 	FHitResult Hit;
 	FVector StartTrace = FP_Gun->GetComponentLocation();
 	for (TActorIterator<AJett>jett(GetWorld()); jett; ++jett)
@@ -138,7 +138,7 @@ void AValEnemy::Fire()
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint));
 		}
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *Hit.GetActor()->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("%s"), *Hit.GetActor()->GetName());
 
 	}
 
@@ -194,8 +194,6 @@ void AValEnemy::Attacked(int32 deal)
 	
 
 
-
-	UE_LOG(LogTemp, Warning, TEXT("HIT"));
 	if (HP <= 0)
 	{
 		if (DeathParticles != nullptr) {
@@ -210,9 +208,10 @@ void AValEnemy::Attacked(int32 deal)
 			if (myGM->enemyNum <= 0) {
 				EnemyAllDestory();
 			}
+			myGM->Money += 500;
+			myGM->UpMoney();
+			this->Destroy();
 		}
-		myGM->Money += 500;
-		this->Destroy();
 	}
 }
 

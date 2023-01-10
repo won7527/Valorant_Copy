@@ -65,6 +65,13 @@ void AJett::BeginPlay()
 
 	Weapon1Use();
 
+	FP_Shotgun->SetVisibility(false);
+	FP_Gun->SetVisibility(false);
+	FP_Snipergun->SetVisibility(false);
+
+	isWeapon1Able = false;
+	isWeapon2Able = false;
+	isWeapon3Able = false;
 
 	FVector Location = GetActorLocation() + FVector(0, 0, -200);
 	DeactivatedLocation = Location;
@@ -323,7 +330,7 @@ void AJett::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	//buysreen
 	PlayerInputComponent->BindAction(TEXT("Buy"), IE_Pressed, this, &AJett::PressBuy);
-	PlayerInputComponent->BindAction(TEXT("Buy"), IE_Released, this, &AJett::ReleaseBuy);
+	/*PlayerInputComponent->BindAction(TEXT("Buy"), IE_Released, this, &AJett::ReleaseBuy);*/
 
 	
 }
@@ -555,21 +562,37 @@ void AJett::FireSp()
 
 void AJett::PressBuy()
 {
-	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	myGM = Cast<AValorant>(gm);
-	if (myGM != nullptr) {
-		myGM->PrintBuy();
+	if (isBuyWidget == false) {
+
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		myGM = Cast<AValorant>(gm);
+		if (myGM != nullptr) {
+			myGM->PrintBuy();
+		}
+		isBuyWidget = true;
+	}
+	else if (isBuyWidget == true) {
+
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		myGM = Cast<AValorant>(gm);
+		if (myGM != nullptr) {
+			myGM->RemoveBuy();
+		}
+		isBuyWidget = false;
 	}
 }
 
-void AJett::ReleaseBuy()
-{
-	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	myGM = Cast<AValorant>(gm);
-	if (myGM != nullptr) {
-		myGM->RemoveBuy();
-	}
-}
+//void AJett::ReleaseBuy()
+//{
+//	if (isBuyWidget == true) {
+//
+//		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+//		myGM = Cast<AValorant>(gm);
+//		if (myGM != nullptr) {
+//			myGM->RemoveBuy();
+//		}
+//	}
+//}
 
 
 void AJett::StartFire()
@@ -1005,41 +1028,50 @@ int32 AJett::GetAmmo()
 
 void AJett::Weapon1Use()
 {
-	isWeapon1Use = true;
-	isWeapon2Use = false;
-	isWeapon3Use = false;
-	FP_Shotgun->SetVisibility(false);
-	FP_Gun->SetVisibility(true);
-	FP_Snipergun->SetVisibility(false);
-	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	myGM = Cast<AValorant>(gm);
-	myGM->ChangeWeapon();
+	if (isWeapon1Able == true) {
+
+		isWeapon1Use = true;
+		isWeapon2Use = false;
+		isWeapon3Use = false;
+		FP_Shotgun->SetVisibility(false);
+		FP_Gun->SetVisibility(true);
+		FP_Snipergun->SetVisibility(false);
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		myGM = Cast<AValorant>(gm);
+		myGM->ChangeWeapon();
+	}
 }
 
 void AJett::Weapon2Use()
 {
-	isWeapon1Use = false;
-	isWeapon2Use = true;
-	isWeapon3Use = false;
-	FP_Shotgun->SetVisibility(true);
-	FP_Gun->SetVisibility(false);
-	FP_Snipergun->SetVisibility(false);
-	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	myGM = Cast<AValorant>(gm);
-	myGM->ChangeWeapon();
+	if (isWeapon2Able == true) {
+
+		isWeapon1Use = false;
+		isWeapon2Use = true;
+		isWeapon3Use = false;
+		FP_Shotgun->SetVisibility(true);
+		FP_Gun->SetVisibility(false);
+		FP_Snipergun->SetVisibility(false);
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		myGM = Cast<AValorant>(gm);
+		myGM->ChangeWeapon();
+	}
 }
 
 void AJett::Weapon3Use()
 {
-	isWeapon1Use = false;
-	isWeapon2Use = false;
-	isWeapon3Use = true;
-	FP_Shotgun->SetVisibility(false);
-	FP_Gun->SetVisibility(false);
-	FP_Snipergun->SetVisibility(true);
-	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
-	myGM = Cast<AValorant>(gm);
-	myGM->ChangeWeapon();
+	if (isWeapon3Able == true) {
+
+		isWeapon1Use = false;
+		isWeapon2Use = false;
+		isWeapon3Use = true;
+		FP_Shotgun->SetVisibility(false);
+		FP_Gun->SetVisibility(false);
+		FP_Snipergun->SetVisibility(true);
+		AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
+		myGM = Cast<AValorant>(gm);
+		myGM->ChangeWeapon();
+	}
 }
 
 void AJett::SniperAim()

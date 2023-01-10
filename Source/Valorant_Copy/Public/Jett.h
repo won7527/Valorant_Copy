@@ -295,6 +295,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool isPlayerMakingSound = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool isBuyWidget = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		bool isWeapon1Able = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		bool isWeapon2Able = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		bool isWeapon3Able = false;
+
 
 private:
 	FVector ShotDirection;

@@ -32,6 +32,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
 	class UTextBlock* UImoney;
 
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UIenemyNum;
+
+	UPROPERTY(EditAnywhere, Category = "MySetting", meta = (BindWidget))
+	class UTextBlock* UItimer;
+
 	//void PrintAmmo();
 
 

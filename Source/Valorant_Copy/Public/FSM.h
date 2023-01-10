@@ -68,7 +68,7 @@ public:
 	float attackRange = 800.0f;
 
 	UPROPERTY(EditAnywhere, Category = FSM)
-	float soundRange = 4000.0f;
+	float soundRange = 3000.0f;
 
 	FVector destination;
 

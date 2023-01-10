@@ -48,6 +48,7 @@ public:
 
 
 
+
 	void MinusAmmo(int32 count);
 
 	void ReloadAmmo();
@@ -102,10 +103,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MyDefaultSetting)
 	int32 Money = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MyDefaultSetting)
+	float cur = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MyDefaultSetting)
+	float GameTimer = 50;
+
 	UFUNCTION()
 	void Damaged(int32 deal);
 
 	FTimerHandle TimerHandle_ResetMap;
+
+	/*FTimerHandle TimerHandle_PlayerDestory;*/
 
 	UFUNCTION()
 	void LoseRound();
@@ -131,9 +140,14 @@ public:
 	UFUNCTION()
 	void RemoveBuy();
 
+	UFUNCTION()
+	void UpMoney();
+
+	/*UFUNCTION()
+		void P_DestroyDelay();*/
+
 
 	
-
 private:
 
 	//RoundScoreTxt file

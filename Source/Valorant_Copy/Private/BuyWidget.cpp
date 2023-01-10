@@ -17,15 +17,19 @@ void UBuyWidget::NativeConstruct()
 
 void UBuyWidget::Rifle()
 {
+	
 	AActor* playerActor = UGameplayStatics::GetActorOfClass(GetWorld(), AJett::StaticClass());
 	AJett* player = Cast<AJett>(playerActor);
-	if (player != nullptr) {
-
-	}
 	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 	AValorant* myGM = Cast<AValorant>(gm);
 	if (myGM != nullptr) {
-		myGM->SpendMoney(100);
+		if (myGM->Money >= 500) {
+			myGM->SpendMoney(500);
+
+			if (player != nullptr) {
+				player->isWeapon1Able = true;
+			}
+		}
 	}
 }
 
@@ -33,26 +37,33 @@ void UBuyWidget::Shotgun()
 {
 	AActor* playerActor = UGameplayStatics::GetActorOfClass(GetWorld(), AJett::StaticClass());
 	AJett* player = Cast<AJett>(playerActor);
-	if (player != nullptr) {
-
-	}
 	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 	AValorant* myGM = Cast<AValorant>(gm);
 	if (myGM != nullptr) {
-		myGM->SpendMoney(200);
+		if (myGM->Money >= 1000) {
+			myGM->SpendMoney(1000);
+
+			if (player != nullptr) {
+				player->isWeapon2Able = true;
+			}
+		}
 	}
+	
 }
 
 void UBuyWidget::Sniper()
 {
 	AActor* playerActor = UGameplayStatics::GetActorOfClass(GetWorld(), AJett::StaticClass());
 	AJett* player = Cast<AJett>(playerActor);
-	if (player != nullptr) {
-
-	}
 	AGameModeBase* gm = UGameplayStatics::GetGameMode(this);
 	AValorant* myGM = Cast<AValorant>(gm);
 	if (myGM != nullptr) {
-		myGM->SpendMoney(400);
+		if (myGM->Money >= 2000) {
+			myGM->SpendMoney(2000);
+
+			if (player != nullptr) {
+				player->isWeapon3Able = true;
+			}
+		}
 	}
 }
